@@ -15,6 +15,7 @@ const resources = {
   en: {
     common: {
       appTitle: 'Digital Kholagy',
+      retry: 'Retry',
       tabs: {
         home: 'Home',
         bible: 'Bible',
@@ -81,7 +82,45 @@ const resources = {
         noContent: 'Content not available in this language yet.',
         fallbackNotice: 'Showing available text while translation is prepared.',
         toc: 'Table of contents',
-        share: 'Share selection'
+        share: 'Share selection',
+        toastCopied: 'Text copied to clipboard',
+        toastShared: 'Sharing options opened'
+      },
+      bible: {
+        searchPlaceholder: 'Search the Bible',
+        translationTitle: 'Translations',
+        translationLabel: {
+          en: 'English (KJV)',
+          ar: 'Arabic (SVD)',
+          ru: 'Russian (Synodal)',
+        },
+        booksTitle: 'Books',
+        chaptersTitle: 'Chapters',
+        searchResultsTitle: '{{count}} results',
+        emptyVerses: 'Select a book and chapter to start reading.',
+        toastBookmarkAdded: 'Verse saved to bookmarks',
+        toastBookmarkRemoved: 'Bookmark removed',
+        toastCopied: 'Verse copied to clipboard',
+        toastBookUnavailable: 'Book unavailable in this translation.'
+      },
+      calendar: {
+        readingsTitle: 'Daily readings',
+        feastsTitle: 'Feasts',
+        fastsTitle: 'Fasting guidelines',
+        searchPlaceholder: 'Search feasts or readings',
+        noneLabel: 'No entries for today.',
+        readingDefaultTitle: 'Reading',
+        feastDefaultTitle: 'Feast',
+        fastDefaultTitle: 'Fast'
+      },
+      menu: {
+        librarySection: 'More resources',
+        bible: 'Bible',
+        calendar: 'Calendar',
+        agpeya: 'Agpeya',
+        synaxarium: 'Synaxarium',
+        psalmody: 'Psalmody',
+        settings: 'Settings'
       },
       settings: {
         uiLanguage: 'Interface language',
@@ -110,6 +149,7 @@ const resources = {
   ar: {
     common: {
       appTitle: 'الخولاجي الرقمي',
+      retry: 'أعد المحاولة',
       tabs: {
         home: 'الرئيسية',
         bible: 'الكتاب المقدس',
@@ -176,7 +216,45 @@ const resources = {
         noContent: 'المحتوى غير متوفر بهذه اللغة بعد.',
         fallbackNotice: 'يتم عرض النص المتاح حتى تكتمل الترجمة.',
         toc: 'فهرس المحتوى',
-        share: 'مشاركة النص المحدد'
+        share: 'مشاركة النص المحدد',
+        toastCopied: 'تم نسخ النص إلى الحافظة',
+        toastShared: 'تم فتح خيارات المشاركة'
+      },
+      bible: {
+        searchPlaceholder: 'ابحث في الكتاب المقدس',
+        translationTitle: 'الترجمات',
+        translationLabel: {
+          en: 'الإنجليزية (KJV)',
+          ar: 'العربية (SVD)',
+          ru: 'الروسية (السينودالية)',
+        },
+        booksTitle: 'الأسفار',
+        chaptersTitle: 'الإصحاحات',
+        searchResultsTitle: '{{count}} نتيجة',
+        emptyVerses: 'اختر سفرًا وإصحاحًا لبدء القراءة.',
+        toastBookmarkAdded: 'تم حفظ الآية في العلامات',
+        toastBookmarkRemoved: 'تمت إزالة العلامة',
+        toastCopied: 'تم نسخ الآية',
+        toastBookUnavailable: 'السفر غير متوفر في هذه الترجمة'
+      },
+      calendar: {
+        readingsTitle: 'قراءات اليوم',
+        feastsTitle: 'الأعياد',
+        fastsTitle: 'أنظمة الصوم',
+        searchPlaceholder: 'ابحث في القراءات أو الأعياد',
+        noneLabel: 'لا توجد بيانات اليوم.',
+        readingDefaultTitle: 'قراءة',
+        feastDefaultTitle: 'عيد',
+        fastDefaultTitle: 'صوم'
+      },
+      menu: {
+        librarySection: 'موارد إضافية',
+        bible: 'الكتاب المقدس',
+        calendar: 'التقويم',
+        agpeya: 'الأجبية',
+        synaxarium: 'السنكسار',
+        psalmody: 'الإبصلمودية',
+        settings: 'الإعدادات'
       },
       settings: {
         uiLanguage: 'لغة الواجهة',
@@ -205,6 +283,7 @@ const resources = {
   ru: {
     common: {
       appTitle: 'Цифровой Холагий',
+      retry: 'Повторить',
       tabs: {
         home: 'Главная',
         bible: 'Библия',
@@ -271,7 +350,45 @@ const resources = {
         noContent: 'Контент пока недоступен на этом языке.',
         fallbackNotice: 'Показываем доступный текст, пока готовится перевод.',
         toc: 'Оглавление',
-        share: 'Поделиться выделенным'
+        share: 'Поделиться выделенным',
+        toastCopied: 'Текст скопирован в буфер обмена',
+        toastShared: 'Открыто меню поделиться'
+      },
+      bible: {
+        searchPlaceholder: 'Поиск по Библии',
+        translationTitle: 'Переводы',
+        translationLabel: {
+          en: 'Английский (KJV)',
+          ar: 'Арабский (SVD)',
+          ru: 'Русский (Синодальный)',
+        },
+        booksTitle: 'Книги',
+        chaptersTitle: 'Главы',
+        searchResultsTitle: '{{count}} результатов',
+        emptyVerses: 'Выберите книгу и главу, чтобы начать чтение.',
+        toastBookmarkAdded: 'Стих добавлен в закладки',
+        toastBookmarkRemoved: 'Закладка удалена',
+        toastCopied: 'Стих скопирован',
+        toastBookUnavailable: 'Книга недоступна в этом переводе.'
+      },
+      calendar: {
+        readingsTitle: 'Чтения дня',
+        feastsTitle: 'Праздники',
+        fastsTitle: 'Посты',
+        searchPlaceholder: 'Поиск чтений или праздников',
+        noneLabel: 'На сегодня нет записей.',
+        readingDefaultTitle: 'Чтение',
+        feastDefaultTitle: 'Праздник',
+        fastDefaultTitle: 'Пост'
+      },
+      menu: {
+        librarySection: 'Дополнительные разделы',
+        bible: 'Библия',
+        calendar: 'Календарь',
+        agpeya: 'Агпея',
+        synaxarium: 'Синаксарь',
+        psalmody: 'Псалмодия',
+        settings: 'Настройки'
       },
       settings: {
         uiLanguage: 'Язык интерфейса',

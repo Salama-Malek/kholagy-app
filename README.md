@@ -8,15 +8,45 @@ Digital Kholagy is a multi-language Orthodox liturgical companion inspired by th
    ```bash
    npm install
    ```
-2. Generate the content map (re-run whenever you add or rename markdown files):
+2. Copy the environment template and provide your API.Bible key:
+   ```bash
+   cp .env.example .env
+   ```
+   The `API_BIBLE_KEY` value is injected into the Expo runtime via `app.config.ts` and consumed through `expo-constants`.
+3. Generate the content map (re-run whenever you add or rename markdown files):
    ```bash
    npm run build:content
    ```
-3. Launch the Expo development server:
+4. Launch the Expo development server:
    ```bash
    npm run start
    ```
-4. Open the project in the Expo Go app, iOS simulator, Android emulator, or the web browser as needed.
+5. Open the project in the Expo Go app, iOS simulator, Android emulator, or the web browser as needed.
+
+## External Data Sources
+
+- **API.Bible** is used for the Holy Bible screen. Requests require the API key mentioned above and are routed through `src/api/bible.ts`. Books, chapters, verses, and search responses are cached in AsyncStorage so previously viewed passages remain available offline.
+- **Orthocal API** powers the liturgical calendar in `src/api/orthocal.ts`. Daily readings, feasts, and fast information are fetched for the selected date and cached to provide an offline history.
+- Local markdown liturgy texts are wrapped by `src/api/liturgy.ts`, which ReaderScreen now consumes to keep markdown loading logic consistent with the network APIs.
+
+## Navigation & Menu Updates
+
+- Bottom tabs remain focused on Kholagy, Fractions, Prayers, and Settings. The Settings tab now opens the localized menu list from `src/screens/MenuScreen.tsx`.
+- The side menu includes Bible and Calendar entries alongside existing resources (Agpeya, Synaxarium, Psalmody). Selecting Bible or Calendar pushes the new stack screens, while other items deep link into the appropriate tab.
+- A global search context (`src/context/SearchContext.tsx`) keeps Bible, Calendar, and liturgy search results in sync across screens.
+
+## Offline Caching
+
+- Bible queries (books, chapters, verses, search results) persist in AsyncStorage for quick repeat access.
+- Calendar responses cache per date for 12 hours, ensuring daily readings remain available even when offline.
+- Liturgy scroll position bookmarks continue to save automatically; copy/share actions now surface quick toasts.
+
+## Screenshots
+
+Placeholder images for documentation (replace with actual captures when available):
+
+- `docs/bible-screen.png` â€“ Bible screen preview.
+- `docs/calendar-screen.png` â€“ Calendar screen preview.
 
 ## Project Structure
 
@@ -29,9 +59,9 @@ screens/                # Screen components (lists, reader, settings)
 ```
 
 Key configuration files:
-- `metro.config.js` – enables bundling markdown assets from the `content` directory.
-- `app.json` – Expo application manifest.
-- `src/contentMap.ts` – generated mapping of content keys to bundled assets.
+- `metro.config.js` â€“ enables bundling markdown assets from the `content` directory.
+- `app.json` â€“ Expo application manifest.
+- `src/contentMap.ts` â€“ generated mapping of content keys to bundled assets.
 
 ## Adding New Content
 

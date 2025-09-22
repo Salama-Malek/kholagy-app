@@ -9,20 +9,10 @@
   | 'psalmody'
   | 'feastsCalendar';
 
-export type TabKey =
-  | 'home'
-  | 'bible'
-  | 'kholagy'
-  | 'more'
-  | 'fractions'
-  | 'prayers'
-  | 'settings';
+export type TabKey = 'kholagy' | 'fractions' | 'prayers' | 'settings';
 
 export type TabParamList = {
-  home: undefined;
-  bible: undefined;
   kholagy: { category?: Category } | undefined;
-  more: undefined;
   fractions: { category?: Category } | undefined;
   prayers: { category?: Category } | undefined;
   settings: undefined;
@@ -34,4 +24,7 @@ export type RootStackParamList = {
     itemId: string;
     title: string;
   };
+  Bible: undefined;
+  Calendar: undefined;
+  Settings: undefined;
 };

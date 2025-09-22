@@ -9,9 +9,13 @@ import { useTranslation } from 'react-i18next';
 import Tabs from './navigation/Tabs';
 import type { RootStackParamList } from './navigation/types';
 import ReaderScreen from './screens/ReaderScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
 import { AppConfigProvider, useAppConfig } from './src/context/AppConfigContext';
 import { PreferencesProvider, usePreferences } from './src/context/PreferencesContext';
+import { SearchProvider } from './src/context/SearchContext';
+import BibleScreen from './src/screens/BibleScreen';
+import CalendarScreen from './src/screens/CalendarScreen';
 import './src/i18n';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -66,6 +70,27 @@ const RootNavigator = () => {
             title: route.params.title || t('appTitle'),
           })}
         />
+        <Stack.Screen
+          name="Bible"
+          component={BibleScreen}
+          options={{
+            title: t('menu.bible'),
+          }}
+        />
+        <Stack.Screen
+          name="Calendar"
+          component={CalendarScreen}
+          options={{
+            title: t('menu.calendar'),
+          }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            title: t('menu.settings'),
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -77,7 +102,9 @@ const App = () => {
       <AppConfigProvider>
         <PreferencesProvider>
           <LanguageProvider>
-            <RootNavigator />
+            <SearchProvider>
+              <RootNavigator />
+            </SearchProvider>
           </LanguageProvider>
         </PreferencesProvider>
       </AppConfigProvider>
