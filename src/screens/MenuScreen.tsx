@@ -79,6 +79,13 @@ const MenuScreen: React.FC = () => {
       { key: 'agpeya', icon: 'book-cross', label: t('menu.agpeya'), action: { type: 'tab', target: 'kholagy', params: { category: 'agpeya' } } },
       { key: 'synaxarium', icon: 'book-open-variant', label: t('menu.synaxarium'), action: { type: 'tab', target: 'kholagy', params: { category: 'synaxarium' } } },
       { key: 'psalmody', icon: 'music-clef-treble', label: t('menu.psalmody'), action: { type: 'tab', target: 'kholagy', params: { category: 'psalmody' } } },
+      { key: 'quotes', icon: 'format-quote-close', label: t('menu.quotes'), action: { type: 'tab', target: 'kholagy', params: { category: 'quotes' } } },
+      {
+        key: 'encyclopedia',
+        icon: 'book-information-variant',
+        label: t('menu.encyclopedia'),
+        action: { type: 'tab', target: 'kholagy', params: { category: 'encyclopedia' } },
+      },
       { key: 'settings', icon: 'cog-outline', label: t('menu.settings'), action: { type: 'stack', target: 'Settings' } },
     ],
     [t],
