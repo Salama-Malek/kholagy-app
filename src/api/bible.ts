@@ -79,10 +79,18 @@ const request = async <T>(endpoint: string, params: Record<string, string | numb
 
 const normalizeVerseText = (value?: string | null): string => {
   if (typeof value === 'string') {
-    return value.trim();
+    return value.replace(/\s+/g, ' ').trim();
   }
   return '';
 };
+
+export interface BibleSummary {
+  id: string;
+  abbreviation?: string;
+  name: string;
+  language?: string;
+  description?: string;
+}
 
 export interface BibleBook {
   id: string;
@@ -90,6 +98,7 @@ export interface BibleBook {
   name: string;
   nameLong?: string;
   chapters?: string[];
+  testament?: string;
 }
 
 export interface BibleChapter {
@@ -106,6 +115,14 @@ export interface BibleVerse {
   number: string;
   reference: string;
   text: string;
+}
+
+export interface BibleChapterContent {
+  id: string;
+  bookId: string;
+  number: string;
+  reference: string;
+  verses: BibleVerse[];
 }
 
 export interface BibleSearchResult {
@@ -128,6 +145,12 @@ const resolveBibleId = (bibleId?: string, fallbackLang?: string) => {
   return DEFAULT_BIBLE_IDS.en;
 };
 
+export const listBibles = async (): Promise<BibleSummary[]> => {
+  const cacheKey = 'bible:list';
+  const data = await fetchWithCache<{ data: BibleSummary[] }>(cacheKey, () => request<{ data: BibleSummary[] }>('/bibles'), CACHE_TTL_BOOKS);
+  return data.data;
+};
+
 export const getBooks = async (bibleId?: string, lang?: string): Promise<BibleBook[]> => {
   const id = resolveBibleId(bibleId, lang);
   const cacheKey = `bible:${id}:books`;
@@ -146,36 +169,127 @@ export const getChapters = async (bookId: string, bibleId?: string, lang?: strin
   return data.data;
 };
 
-interface VerseResponse {
-  data: Array<{
+type ChapterContentNode = {
+  id?: string;
+  type?: string;
+  text?: string;
+  value?: string;
+  number?: string;
+  reference?: string;
+  content?: ChapterContentNode[];
+  items?: ChapterContentNode[];
+  children?: ChapterContentNode[];
+  verseId?: string;
+};
+
+interface ChapterContentResponse {
+  data: {
     id: string;
     bookId: string;
-    chapterId: string;
+    number: string;
     reference: string;
-    text?: string | null;
-  }>;
+    content?: ChapterContentNode[];
+  };
 }
 
-export const getVerses = async (chapterId: string, bibleId?: string, lang?: string): Promise<BibleVerse[]> => {
+const gatherNodeText = (node?: ChapterContentNode, parts: string[] = []): string[] => {
+  if (!node) {
+    return parts;
+  }
+  if (typeof node.text === 'string') {
+    parts.push(node.text);
+  }
+  if (typeof node.value === 'string') {
+    parts.push(node.value);
+  }
+  if (Array.isArray(node.content)) {
+    node.content.forEach((child) => gatherNodeText(child, parts));
+  }
+  if (Array.isArray(node.items)) {
+    node.items.forEach((child) => gatherNodeText(child, parts));
+  }
+  if (Array.isArray(node.children)) {
+    node.children.forEach((child) => gatherNodeText(child, parts));
+  }
+  return parts;
+};
+
+const extractVerseFromNode = (node: ChapterContentNode, chapter: { id: string; bookId: string }): BibleVerse | null => {
+  if (!node) {
+    return null;
+  }
+  const id = node.id ?? node.verseId ?? '';
+  const reference = node.reference ?? '';
+  const number = node.number ?? (reference.includes(':') ? reference.split(':').pop() ?? '' : id.split('.').pop() ?? '');
+  const text = normalizeVerseText(gatherNodeText(node).join(' '));
+  if (!id || !text) {
+    return null;
+  }
+  return {
+    id,
+    bookId: chapter.bookId,
+    chapterId: chapter.id,
+    number,
+    reference: reference || `${chapter.bookId} ${number}`,
+    text,
+  };
+};
+
+const extractVerses = (nodes: ChapterContentNode[] | undefined, chapter: { id: string; bookId: string }): BibleVerse[] => {
+  if (!nodes || nodes.length === 0) {
+    return [];
+  }
+  const verses: BibleVerse[] = [];
+  const walk = (node?: ChapterContentNode) => {
+    if (!node) {
+      return;
+    }
+    if (node.type === 'verse') {
+      const verse = extractVerseFromNode(node, chapter);
+      if (verse) {
+        verses.push(verse);
+      }
+      return;
+    }
+    if (Array.isArray(node.content)) {
+      node.content.forEach((child) => walk(child));
+    }
+    if (Array.isArray(node.items)) {
+      node.items.forEach((child) => walk(child));
+    }
+    if (Array.isArray(node.children)) {
+      node.children.forEach((child) => walk(child));
+    }
+  };
+  nodes.forEach((node) => walk(node));
+  return verses;
+};
+
+export const getChapterContent = async (
+  chapterId: string,
+  bibleId?: string,
+  lang?: string,
+): Promise<BibleChapterContent> => {
   const id = resolveBibleId(bibleId, lang);
-  const cacheKey = `bible:${id}:chapter:${chapterId}`;
-  const data = await fetchWithCache<VerseResponse>(
+  const cacheKey = `bible:${id}:chapterContent:${chapterId}`;
+  const data = await fetchWithCache<ChapterContentResponse>(
     cacheKey,
     () =>
-      request<VerseResponse>(`/bibles/${id}/chapters/${chapterId}/verses`, {
-        'content-type': 'text',
+      request<ChapterContentResponse>(`/bibles/${id}/chapters/${chapterId}`, {
+        'content-type': 'json',
         'include-notes': 'false',
       }),
     CACHE_TTL_VERSES,
   );
-  return data.data.map((entry) => ({
-    id: entry.id,
-    bookId: entry.bookId,
-    chapterId: entry.chapterId,
-    number: entry.reference.split(':').pop() ?? '',
-    reference: entry.reference,
-    text: normalizeVerseText(entry.text),
-  }));
+  const chapter = data.data;
+  const verses = extractVerses(chapter.content, { id: chapter.id, bookId: chapter.bookId });
+  return {
+    id: chapter.id,
+    bookId: chapter.bookId,
+    number: chapter.number,
+    reference: chapter.reference,
+    verses,
+  };
 };
 
 interface SearchResponse {

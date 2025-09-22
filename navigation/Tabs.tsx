@@ -76,7 +76,7 @@ const Tabs = () => {
             initialParams={definition.initialParams}
             options={{
               title: label,
-              headerShown: tab.key === 'home' ? false : undefined,
+              headerShown: tab.key === 'kholagy' ? false : undefined,
               tabBarIcon: ({ color }) => (
                 <MaterialCommunityIcons
                   name={iconName as any}

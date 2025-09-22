@@ -95,9 +95,9 @@ const MenuScreen: React.FC = () => {
             key={item.key}
             onPress={() => {
               if (item.action.type === 'stack') {
-                navigation.navigate(item.action.target);
+                navigation.navigate(item.action.target as any);
               } else {
-                navigation.navigate(item.action.target, item.action.params);
+                navigation.navigate(item.action.target as any, item.action.params as any);
               }
             }}
             style={({ pressed }) => ({
