@@ -1,4 +1,6 @@
-﻿export type Category =
+import type { NavigatorScreenParams } from '@react-navigation/native';
+
+export type Category =
   | 'kholagy'
   | 'liturgies'
   | 'fractions'
@@ -21,7 +23,8 @@ export type TabParamList = {
 };
 
 export type RootStackParamList = {
-  MainTabs: undefined;
+  Home: undefined;
+  MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   Reader: {
     itemId: string;
     title: string;

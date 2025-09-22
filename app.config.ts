@@ -34,10 +34,10 @@ export default (): ExpoConfig => {
         process.env.API_BIBLE_BASE_URL ??
         process.env.EXPO_PUBLIC_API_BIBLE_BASE_URL ??
         'https://api.scripture.api.bible/v1',
-      orthocalBaseUrl:
-        process.env.ORTHOCAL_BASE_URL ??
-        process.env.EXPO_PUBLIC_ORTHOCAL_BASE_URL ??
-        'https://orthocal.info/api',
+      copticBaseUrl:
+        process.env.COPTIC_BASE_URL ??
+        process.env.EXPO_PUBLIC_COPTIC_BASE_URL ??
+        'https://coptic.io',
     },
   } as ExpoConfig;
 };

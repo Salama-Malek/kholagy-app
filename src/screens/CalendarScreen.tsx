@@ -1,282 +1,244 @@
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import {
-  DailyReading,
-  FeastDay,
-  FastInfo,
-  getDailyReadings,
-  getFeasts,
-  getFastInfo,
-} from '../api/orthocal';
+import { getCopticDate, getDailyReadings, getLocalizedCopticMonthName, type DailyReadings } from '../api/coptic';
+import { getSynaxarium, type SynaxariumEntry } from '../api/synaxarium';
 import { useAppConfig } from '../context/AppConfigContext';
 import { useLanguage } from '../context/LanguageContext';
-import { useSearch, CalendarSearchHit } from '../context/SearchContext';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingBottom: 48,
-    gap: 16,
+    gap: 20,
   },
-  headerRow: {
+  header: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  dateColumn: {
+    flex: 1,
     alignItems: 'center',
   },
-  dateText: {
+  gregorianText: {
     fontSize: 20,
     fontWeight: '700',
+    textAlign: 'center',
+  },
+  copticText: {
+    marginTop: 6,
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   navButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
-  searchRow: {
+  sectionCard: {
+    borderRadius: 22,
+    padding: 20,
+    borderWidth: 1,
+    gap: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  serviceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  searchInput: {
-    flex: 1,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 14,
+  serviceTitle: {
+    fontSize: 17,
+    fontWeight: '600',
   },
-  sectionCard: {
-    borderRadius: 18,
+  readingCard: {
+    borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    gap: 12,
+    gap: 6,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  entryCard: {
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    gap: 4,
-  },
-  entryTitle: {
+  readingTitle: {
     fontSize: 16,
     fontWeight: '600',
   },
-  entryMeta: {
+  readingMeta: {
     fontSize: 13,
+    fontWeight: '500',
+  },
+  readingBody: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   emptyLabel: {
-    textAlign: 'center',
     fontSize: 14,
+    textAlign: 'center',
+  },
+  synaxariumEntry: {
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    gap: 8,
+  },
+  synaxariumTitle: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   errorCard: {
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 20,
+    padding: 24,
     borderWidth: 1,
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
   retryButton: {
     paddingHorizontal: 18,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
   },
 });
 
-const toISODate = (date: Date) => {
+const SERVICES: Array<{
+  key: keyof DailyReadings;
+  icon: string;
+  translation: string;
+}> = [
+  { key: 'matins', icon: 'weather-sunset-up', translation: 'calendar.services.matins' },
+  { key: 'vespers', icon: 'weather-sunset-down', translation: 'calendar.services.vespers' },
+  { key: 'liturgy', icon: 'church', translation: 'calendar.services.liturgy' },
+];
+
+const toISO = (date: Date) => {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, '0');
   const day = `${date.getDate()}`.padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
-const formatDisplayDate = (date: Date, locale: string) => {
-  return new Intl.DateTimeFormat(locale, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
-};
-
 const CalendarScreen: React.FC = () => {
   const { t } = useTranslation();
-  const { resolvedTheme, uiLang, isRTL } = useLanguage();
   const { config } = useAppConfig();
-  const { setDomainResults, clearDomain } = useSearch();
+  const { resolvedTheme, uiLang, isRTL } = useLanguage();
 
   const palette = config.theme[resolvedTheme];
 
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [loading, setLoading] = useState(false);
+  const [copticDate, setCopticDate] = useState<{
+    year: number;
+    month: number;
+    day: number;
+    name: string;
+  } | null>(null);
+  const [readings, setReadings] = useState<DailyReadings | null>(null);
+  const [synaxarium, setSynaxarium] = useState<SynaxariumEntry[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [readings, setReadings] = useState<DailyReading[]>([]);
-  const [feasts, setFeasts] = useState<FeastDay[]>([]);
-  const [fasts, setFasts] = useState<FastInfo[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
 
-  const isoDate = useMemo(() => toISODate(currentDate), [currentDate]);
+  const gregorianLabel = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat(uiLang, {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      }).format(currentDate);
+    } catch (err) {
+      return currentDate.toDateString();
+    }
+  }, [currentDate, uiLang]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [dailyReadings, feastDays, fastInfo] = await Promise.all([
-        getDailyReadings(isoDate),
-        getFeasts(isoDate),
-        getFastInfo(isoDate),
+      const copticInfo = await getCopticDate(currentDate);
+      setCopticDate({
+        year: copticInfo.copticYear,
+        month: copticInfo.copticMonth,
+        day: copticInfo.copticDay,
+        name: copticInfo.copticMonthName,
+      });
+      const [dailyReadings, synaxariumEntries] = await Promise.all([
+        getDailyReadings(copticInfo.copticYear, copticInfo.copticMonth, copticInfo.copticDay),
+        getSynaxarium(copticInfo.copticMonth, copticInfo.copticDay, uiLang),
       ]);
       setReadings(dailyReadings);
-      setFeasts(feastDays);
-      setFasts(fastInfo);
+      setSynaxarium(synaxariumEntries);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
-      setReadings([]);
-      setFeasts([]);
-      setFasts([]);
+      setReadings(null);
+      setSynaxarium([]);
+      setCopticDate(null);
     } finally {
       setLoading(false);
     }
-  }, [isoDate]);
+  }, [currentDate, uiLang]);
 
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
 
-  const filteredReadings = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return readings;
+  const copticLabel = useMemo(() => {
+    if (!copticDate) {
+      return '';
     }
-    const needle = searchTerm.trim().toLowerCase();
-    return readings.filter((reading) => {
-      const haystack = `${reading.title ?? ''} ${reading.citation ?? ''} ${reading.text ?? ''} ${reading.service ?? ''}`;
-      return haystack.toLowerCase().includes(needle);
-    });
-  }, [readings, searchTerm]);
+    const monthName = getLocalizedCopticMonthName(copticDate.month, uiLang, copticDate.name);
+    const suffix = t('calendar.copticYearSuffix');
+    return `${copticDate.day} ${monthName} ${copticDate.year} ${suffix}`.trim();
+  }, [copticDate, t, uiLang]);
 
-  const filteredFeasts = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return feasts;
-    }
-    const needle = searchTerm.trim().toLowerCase();
-    return feasts.filter((feast) => {
-      const haystack = `${feast.title ?? ''} ${feast.rank ?? ''} ${feast.description ?? ''}`;
-      return haystack.toLowerCase().includes(needle);
-    });
-  }, [feasts, searchTerm]);
-
-  const filteredFasts = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return fasts;
-    }
-    const needle = searchTerm.trim().toLowerCase();
-    return fasts.filter((fast) => {
-      const haystack = `${fast.name ?? ''} ${fast.fastingLevel ?? ''} ${fast.description ?? ''}`;
-      return haystack.toLowerCase().includes(needle);
-    });
-  }, [fasts, searchTerm]);
-
-  const aggregatedHits = useMemo<CalendarSearchHit[]>(() => {
-    return [
-      ...readings.map<CalendarSearchHit>((reading, index) => ({
-        id: `${isoDate}:reading:${index}`,
-        title: reading.title ?? t('calendar.readingDefaultTitle'),
-        type: 'reading',
-        description: reading.citation ?? reading.text,
-        metadata: reading.service,
-      })),
-      ...feasts.map<CalendarSearchHit>((feast, index) => ({
-        id: `${isoDate}:feast:${index}`,
-        title: feast.title ?? t('calendar.feastDefaultTitle'),
-        type: 'feast',
-        description: feast.description,
-        metadata: feast.rank,
-      })),
-      ...fasts.map<CalendarSearchHit>((fast, index) => ({
-        id: `${isoDate}:fast:${index}`,
-        title: fast.name ?? t('calendar.fastDefaultTitle'),
-        type: 'fast',
-        description: fast.description,
-        metadata: fast.fastingLevel,
-      })),
-    ];
-  }, [feasts, fasts, isoDate, readings, t]);
-
-  const filteredHits = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return aggregatedHits;
-    }
-    const needle = searchTerm.trim().toLowerCase();
-    return aggregatedHits.filter((hit) => {
-      const haystack = `${hit.title ?? ''} ${hit.description ?? ''} ${hit.metadata ?? ''}`;
-      return haystack.toLowerCase().includes(needle);
-    });
-  }, [aggregatedHits, searchTerm]);
-
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      clearDomain('calendar');
-      return;
-    }
-    setDomainResults('calendar', { query: searchTerm.trim(), results: filteredHits });
-  }, [clearDomain, filteredHits, searchTerm, setDomainResults]);
-  useEffect(() => {
-    return () => {
-      clearDomain('calendar');
-    };
-  }, [clearDomain]);
-
-  const handlePrevDay = useCallback(() => {
+  const handlePrevDay = () => {
     setCurrentDate((prev) => {
       const next = new Date(prev);
       next.setDate(prev.getDate() - 1);
       return next;
     });
-  }, []);
+  };
 
-  const handleNextDay = useCallback(() => {
+  const handleNextDay = () => {
     setCurrentDate((prev) => {
       const next = new Date(prev);
       next.setDate(prev.getDate() + 1);
       return next;
     });
-  }, []);
+  };
+
+  const serviceSections = SERVICES.map((service) => ({
+    ...service,
+    items: readings?.[service.key] ?? [],
+  }));
 
   return (
     <View style={[styles.container, { backgroundColor: palette.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View
-          style={{
-            ...styles.headerRow,
-            flexDirection: isRTL ? 'row-reverse' : 'row',
-          }}
+          style={[
+            styles.header,
+            { flexDirection: isRTL ? 'row-reverse' : 'row' },
+          ]}
         >
           <Pressable
+            accessibilityRole="button"
+            accessibilityHint={t('calendar.previousDayHint')}
             onPress={handlePrevDay}
-            style={{
-              ...styles.navButton,
-              borderColor: palette.divider,
-              backgroundColor: palette.surface,
-            }}
+            style={[
+              styles.navButton,
+              { borderColor: palette.divider, backgroundColor: palette.surface },
+            ]}
           >
             <MaterialCommunityIcons
               name={isRTL ? 'chevron-right' : 'chevron-left'}
@@ -284,19 +246,35 @@ const CalendarScreen: React.FC = () => {
               color={palette.textPrimary}
             />
           </Pressable>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ ...styles.dateText, color: palette.textPrimary }}>
-              {formatDisplayDate(currentDate, uiLang)}
+          <View style={styles.dateColumn}>
+            <Text
+              style={[
+                styles.gregorianText,
+                { color: palette.textPrimary, writingDirection: isRTL ? 'rtl' : 'ltr' },
+              ]}
+            >
+              {gregorianLabel}
             </Text>
-            <Text style={{ color: palette.textSecondary, marginTop: 4 }}>{isoDate}</Text>
+            <Text
+              style={[
+                styles.copticText,
+                { color: palette.accent, writingDirection: isRTL ? 'rtl' : 'ltr' },
+              ]}
+            >
+              {copticLabel || t('calendar.copticFallback')}
+            </Text>
+            <Text style={{ marginTop: 8, color: palette.textSecondary, fontSize: 12 }}>
+              {toISO(currentDate)}
+            </Text>
           </View>
           <Pressable
+            accessibilityRole="button"
+            accessibilityHint={t('calendar.nextDayHint')}
             onPress={handleNextDay}
-            style={{
-              ...styles.navButton,
-              borderColor: palette.divider,
-              backgroundColor: palette.surface,
-            }}
+            style={[
+              styles.navButton,
+              { borderColor: palette.divider, backgroundColor: palette.surface },
+            ]}
           >
             <MaterialCommunityIcons
               name={isRTL ? 'chevron-left' : 'chevron-right'}
@@ -306,147 +284,198 @@ const CalendarScreen: React.FC = () => {
           </Pressable>
         </View>
 
-        <View style={styles.searchRow}>
-          <TextInput
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-            placeholder={t('calendar.searchPlaceholder')}
-            placeholderTextColor={palette.textSecondary}
-            style={{
-              ...styles.searchInput,
-              borderColor: palette.divider,
-              backgroundColor: palette.surface,
-              color: palette.textPrimary,
-              textAlign: isRTL ? 'right' : 'left',
-            }}
-          />
-          <MaterialCommunityIcons name="calendar-search" size={22} color={palette.primary} />
-        </View>
-
         {loading ? (
-          <View style={{ alignItems: 'center', marginTop: 32 }}>
-            <ActivityIndicator color={palette.primary} />
+          <View style={{ alignItems: 'center', marginTop: 40 }}>
+            <ActivityIndicator color={palette.primary} size="large" />
           </View>
         ) : error ? (
-          <View style={{ ...styles.errorCard, borderColor: palette.divider, backgroundColor: palette.surface }}>
-            <Text style={{ color: palette.accent, textAlign: 'center' }}>{error}</Text>
+          <View
+            style={[
+              styles.errorCard,
+              { borderColor: palette.divider, backgroundColor: palette.surface },
+            ]}
+          >
+            <MaterialCommunityIcons name="alert-circle-outline" size={32} color={palette.accent} />
+            <Text style={{ color: palette.textSecondary, textAlign: 'center' }}>
+              {t('calendar.errorTitle')}
+            </Text>
+            <Text style={{ color: palette.textSecondary, textAlign: 'center', fontSize: 13 }}>
+              {t('calendar.errorSubtitle')}
+            </Text>
             <Pressable
               onPress={() => {
                 void fetchData();
               }}
-              style={{
-                ...styles.retryButton,
-                borderColor: palette.primary,
-                backgroundColor: palette.primary + '22',
-              }}
+              style={[
+                styles.retryButton,
+                { borderColor: palette.primary, backgroundColor: `${palette.primary}22` },
+              ]}
             >
               <Text style={{ color: palette.primary }}>{t('common.retry')}</Text>
             </Pressable>
           </View>
         ) : (
           <>
-            <View style={{ ...styles.sectionCard, borderColor: palette.divider, backgroundColor: palette.surface }}>
-              <Text style={{ ...styles.sectionTitle, color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' }}>
-                {t('calendar.readingsTitle')}
+            <View
+              style={[
+                styles.sectionCard,
+                { borderColor: palette.divider, backgroundColor: palette.surface },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' },
+                ]}
+              >
+                {t('calendar.dailyReadingsTitle')}
               </Text>
-              {filteredReadings.length === 0 ? (
-                <Text style={{ ...styles.emptyLabel, color: palette.textSecondary }}>{t('calendar.noneLabel')}</Text>
-              ) : (
-                filteredReadings.map((reading) => (
+              {serviceSections.map((section) => (
+                <View key={section.key} style={{ gap: 12 }}>
                   <View
-                    key={reading.id}
-                    style={{
-                      ...styles.entryCard,
-                      backgroundColor: palette.background,
-                      borderColor: palette.divider,
-                    }}
+                    style={[
+                      styles.serviceHeader,
+                      { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                    ]}
                   >
-                    <Text style={{ ...styles.entryTitle, color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' }}>
-                      {reading.title ?? t('calendar.readingDefaultTitle')}
+                    <View
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 14,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: palette.background,
+                        borderWidth: 1,
+                        borderColor: palette.divider,
+                      }}
+                    >
+                      <MaterialCommunityIcons
+                        name={section.icon as any}
+                        size={22}
+                        color={palette.primary}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.serviceTitle,
+                        { color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' },
+                      ]}
+                    >
+                      {t(section.translation)}
                     </Text>
-                    {reading.citation ? (
-                      <Text style={{ ...styles.entryMeta, color: palette.accent, textAlign: isRTL ? 'right' : 'left' }}>
-                        {reading.citation}
-                      </Text>
-                    ) : null}
-                    {reading.service ? (
-                      <Text style={{ ...styles.entryMeta, color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left' }}>
-                        {reading.service}
-                      </Text>
-                    ) : null}
-                    {reading.text ? (
-                      <Text style={{ color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left', marginTop: 6 }}>
-                        {reading.text}
-                      </Text>
-                    ) : null}
                   </View>
-                ))
-              )}
+                  {section.items.length === 0 ? (
+                    <Text
+                      style={[
+                        styles.emptyLabel,
+                        { color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left' },
+                      ]}
+                    >
+                      {t('calendar.readingsEmpty')}
+                    </Text>
+                  ) : (
+                    section.items.map((item) => (
+                      <View
+                        key={item.id}
+                        style={[
+                          styles.readingCard,
+                          { borderColor: palette.divider, backgroundColor: palette.background },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.readingTitle,
+                            { color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' },
+                          ]}
+                        >
+                          {item.title}
+                        </Text>
+                        {item.reference ? (
+                          <Text
+                            style={[
+                              styles.readingMeta,
+                              { color: palette.accent, textAlign: isRTL ? 'right' : 'left' },
+                            ]}
+                          >
+                            {item.reference}
+                          </Text>
+                        ) : null}
+                        {item.source ? (
+                          <Text
+                            style={[
+                              styles.readingMeta,
+                              { color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left' },
+                            ]}
+                          >
+                            {item.source}
+                          </Text>
+                        ) : null}
+                        {item.text ? (
+                          <Text
+                            style={[
+                              styles.readingBody,
+                              { color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left' },
+                            ]}
+                          >
+                            {item.text}
+                          </Text>
+                        ) : null}
+                      </View>
+                    ))
+                  )}
+                </View>
+              ))}
             </View>
 
-            <View style={{ ...styles.sectionCard, borderColor: palette.divider, backgroundColor: palette.surface }}>
-              <Text style={{ ...styles.sectionTitle, color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' }}>
-                {t('calendar.feastsTitle')}
+            <View
+              style={[
+                styles.sectionCard,
+                { borderColor: palette.divider, backgroundColor: palette.surface },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' },
+                ]}
+              >
+                {t('calendar.synaxariumTitle')}
               </Text>
-              {filteredFeasts.length === 0 ? (
-                <Text style={{ ...styles.emptyLabel, color: palette.textSecondary }}>{t('calendar.noneLabel')}</Text>
+              {synaxarium.length === 0 ? (
+                <Text
+                  style={[
+                    styles.emptyLabel,
+                    { color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left' },
+                  ]}
+                >
+                  {t('calendar.synaxariumEmpty')}
+                </Text>
               ) : (
-                filteredFeasts.map((feast) => (
+                synaxarium.map((entry, index) => (
                   <View
-                    key={feast.id}
-                    style={{
-                      ...styles.entryCard,
-                      backgroundColor: palette.background,
-                      borderColor: palette.divider,
-                    }}
+                    key={`${entry.title}-${index}`}
+                    style={[
+                      styles.synaxariumEntry,
+                      { borderColor: palette.divider, backgroundColor: palette.background },
+                    ]}
                   >
-                    <Text style={{ ...styles.entryTitle, color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' }}>
-                      {feast.title ?? t('calendar.feastDefaultTitle')}
+                    <Text
+                      style={[
+                        styles.synaxariumTitle,
+                        { color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' },
+                      ]}
+                    >
+                      {entry.title}
                     </Text>
-                    {feast.rank ? (
-                      <Text style={{ ...styles.entryMeta, color: palette.accent, textAlign: isRTL ? 'right' : 'left' }}>
-                        {feast.rank}
-                      </Text>
-                    ) : null}
-                    {feast.description ? (
-                      <Text style={{ color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left', marginTop: 6 }}>
-                        {feast.description}
-                      </Text>
-                    ) : null}
-                  </View>
-                ))
-              )}
-            </View>
-
-            <View style={{ ...styles.sectionCard, borderColor: palette.divider, backgroundColor: palette.surface }}>
-              <Text style={{ ...styles.sectionTitle, color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' }}>
-                {t('calendar.fastsTitle')}
-              </Text>
-              {filteredFasts.length === 0 ? (
-                <Text style={{ ...styles.emptyLabel, color: palette.textSecondary }}>{t('calendar.noneLabel')}</Text>
-              ) : (
-                filteredFasts.map((fast) => (
-                  <View
-                    key={fast.id}
-                    style={{
-                      ...styles.entryCard,
-                      backgroundColor: palette.background,
-                      borderColor: palette.divider,
-                    }}
-                  >
-                    <Text style={{ ...styles.entryTitle, color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' }}>
-                      {fast.name ?? t('calendar.fastDefaultTitle')}
+                    <Text
+                      style={[
+                        styles.readingBody,
+                        { color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left' },
+                      ]}
+                    >
+                      {entry.story}
                     </Text>
-                    {fast.fastingLevel ? (
-                      <Text style={{ ...styles.entryMeta, color: palette.accent, textAlign: isRTL ? 'right' : 'left' }}>
-                        {fast.fastingLevel}
-                      </Text>
-                    ) : null}
-                    {fast.description ? (
-                      <Text style={{ color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left', marginTop: 6 }}>
-                        {fast.description}
-                      </Text>
-                    ) : null}
                   </View>
                 ))
               )}

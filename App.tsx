@@ -16,6 +16,7 @@ import { PreferencesProvider, usePreferences } from './src/context/PreferencesCo
 import { SearchProvider } from './src/context/SearchContext';
 import BibleScreen from './src/screens/BibleScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
+import HomeScreen from './src/screens/HomeScreen';
 import './src/i18n';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -53,6 +54,7 @@ const RootNavigator = () => {
     <NavigationContainer theme={navigationTheme}>
       <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
       <Stack.Navigator
+        initialRouteName="Home"
         screenOptions={{
           headerTitleAlign: 'center',
           headerTintColor: palette.textPrimary,
@@ -62,6 +64,7 @@ const RootNavigator = () => {
           headerShadowVisible: config.navigation.headers.style === 'elevated',
         }}
       >
+        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="MainTabs" component={Tabs} options={{ headerShown: false }} />
         <Stack.Screen
           name="Reader"
@@ -81,7 +84,7 @@ const RootNavigator = () => {
           name="Calendar"
           component={CalendarScreen}
           options={{
-            title: t('menu.calendar'),
+            title: t('menu.copticCalendar'),
           }}
         />
         <Stack.Screen

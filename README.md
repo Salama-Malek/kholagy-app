@@ -16,7 +16,7 @@ Digital Kholagy is a multi-language Orthodox liturgical companion inspired by th
    ```
    API_BIBLE_KEY=your_api_bible_key_here
    API_BIBLE_BASE_URL=https://api.scripture.api.bible/v1
-   ORTHOCAL_BASE_URL=https://orthocal.info/api
+   COPTIC_BASE_URL=https://coptic.io
    ```
    These values are injected into the Expo runtime via `app.config.ts` and consumed in the API clients through `expo-constants`.
 3. Generate the content map (re-run whenever you add or rename markdown files):
@@ -32,7 +32,40 @@ Digital Kholagy is a multi-language Orthodox liturgical companion inspired by th
 ## External Data Sources
 
 - **API.Bible** is used for the Holy Bible screen. Requests require the API key mentioned above and are routed through `src/api/bible.ts`, which reads the base URL from `API_BIBLE_BASE_URL`. Books, chapters, verses, and search responses are cached in AsyncStorage so previously viewed passages remain available offline.
-- **Orthocal API** powers the liturgical calendar in `src/api/orthocal.ts`. Daily readings, feasts, and fast information are fetched for the selected date, using the `ORTHOCAL_BASE_URL` to build requests, and cached to provide an offline history.
+- **Coptic.io** powers the liturgical calendar in `src/api/coptic.ts`. The API converts Gregorian dates to the Coptic calendar and returns Matins, Vespers, and Divine Liturgy readings. Responses are cached in AsyncStorage for 12 hours to keep recent days available offline.
+- **Local Synaxarium JSON** entries live under `content/synaxarium/<lang>/<month>/<day>.json` and are loaded with `src/api/synaxarium.ts`. Each file provides an array of `{ "title": string, "story": string }` records so the saints of the day remain available completely offline.
+
+## Home Screen
+
+- The new `HomeScreen` showcases a golden Coptic cross and provides quick navigation cards for the main areas of the app (Kholagy, Prayers, Coptic Calendar, Bible, Settings).
+- Cards respect the active theme and RTL layouts, include MaterialCommunityIcons for visual cues, and scale gracefully between light and dark mode.
+- The screen fetches today's Coptic date from coptic.io and displays it alongside the localized Gregorian date.
+
+## Synaxarium Content Format
+
+Synaxarium files are bundled with the app to guarantee offline access. Each entry is organised by language, Coptic month, and day:
+
+```
+content/
+  synaxarium/
+    en/
+      1/
+        1.json
+    ar/
+      1/
+        1.json
+```
+
+Each JSON file must export an array of objects using the following schema:
+
+```json
+[
+  { "title": "Saint Name", "story": "Story text..." },
+  { "title": "Another Saint", "story": "Story text..." }
+]
+```
+
+The Synaxarium API automatically falls back to English when a translation is missing.
 - Local markdown liturgy texts are wrapped by `src/api/liturgy.ts`, which ReaderScreen now consumes to keep markdown loading logic consistent with the network APIs.
 
 ## Bible Navigation
@@ -48,6 +81,7 @@ The default Arabic, English, and Russian Bible IDs are defined in `DEFAULT_BIBLE
 
 ## Navigation & Menu Updates
 
+- Home is now the first screen presented after the splash experience and provides entry points into all major features.
 - Bottom tabs remain focused on Kholagy, Fractions, Prayers, and Settings. The Settings tab now opens the localized menu list from `src/screens/MenuScreen.tsx`.
 - The side menu includes Bible and Calendar entries alongside existing resources (Agpeya, Synaxarium, Psalmody, Quotes, Encyclopedia). Selecting Bible or Calendar pushes the new stack screens, while other items deep link into the appropriate tab.
 - A global search context (`src/context/SearchContext.tsx`) keeps Bible, Calendar, and liturgy search results in sync across screens.
@@ -55,7 +89,7 @@ The default Arabic, English, and Russian Bible IDs are defined in `DEFAULT_BIBLE
 ## Offline Caching
 
 - Bible queries (bibles list, grouped books, chapters, verses, search results) persist in AsyncStorage for quick repeat access and gracefully fall back to the cached payload when the network is unavailable. The last opened chapter (including rendered verse text) is saved separately so it can be restored with an offline banner when requests fail.
-- Calendar responses cache per date for 12 hours, ensuring daily readings remain available even when offline.
+- Calendar responses from coptic.io cache per date for 12 hours, ensuring daily readings remain available even when offline.
 - Liturgy scroll position bookmarks continue to save automatically; copy/share actions now surface quick toasts.
 
 ## Screenshots
