@@ -30,7 +30,38 @@ const resources = {
         dailyReadingsCta: "View today's readings",
         quickAccessTitle: 'Quick access',
         messagesTitle: 'Community messages',
-        messagesEmpty: 'No announcements for today.'
+        messagesEmpty: 'No announcements for today.',
+        heroTitle: 'Our church treasures',
+        heroSubtitle: 'Navigate the liturgies and readings in one place.',
+        dateLabel: 'Today: {{date}}',
+        copticLabel: 'Coptic calendar: {{date}}',
+        copticExample: '10 Tout 1742',
+        drawerTitle: 'Library sections',
+        radial: {
+          bible: 'Holy Bible',
+          kholagy: 'Divine Liturgy',
+          fractions: 'Fractions',
+          psalmody: 'Psalmody',
+          prayers: 'Prayers',
+          synaxarium: 'Synaxarium'
+        },
+        drawer: {
+          items: {
+            bible: 'Holy Bible',
+            kholagy: 'Divine Liturgy',
+            fractions: 'Fractions',
+            psalmody: 'Psalmody',
+            prayers: 'Prayers',
+            synaxarium: 'Synaxarium',
+            settings: 'Settings'
+          }
+        },
+        actions: {
+          follow: 'Follow us',
+          about: 'About the app',
+          share: 'Share the app',
+          comingSoon: 'More features are coming soon.'
+        }
       },
       quickAccess: {
         bible: 'Bible',
@@ -94,7 +125,38 @@ const resources = {
         dailyReadingsCta: 'عرض قراءات اليوم',
         quickAccessTitle: 'وصول سريع',
         messagesTitle: 'رسائل الخدمة',
-        messagesEmpty: 'لا توجد رسائل اليوم.'
+        messagesEmpty: 'لا توجد رسائل اليوم.',
+        heroTitle: 'كنوز كنيستنا',
+        heroSubtitle: 'اختر القسم الذي ترغب في قراءته أو الصلاة به.',
+        dateLabel: 'اليوم: {{date}}',
+        copticLabel: 'التقويم القبطي: {{date}}',
+        copticExample: '١٠ توت ١٧٤٢',
+        drawerTitle: 'أقسام التطبيق',
+        radial: {
+          bible: 'الكتاب المقدس',
+          kholagy: 'الخولاجي المقدس',
+          fractions: 'الأواشي والكسور',
+          psalmody: 'الإبصلمودية',
+          prayers: 'الصلوات',
+          synaxarium: 'السنكسار'
+        },
+        drawer: {
+          items: {
+            bible: 'الكتاب المقدس',
+            kholagy: 'الخولاجي المقدس',
+            fractions: 'الأواشي والكسور',
+            psalmody: 'الإبصلمودية',
+            prayers: 'الصلوات',
+            synaxarium: 'السنكسار',
+            settings: 'الإعدادات'
+          }
+        },
+        actions: {
+          follow: 'تابعنا',
+          about: 'عن التطبيق',
+          share: 'مشاركة التطبيق',
+          comingSoon: 'الميزة ستتوفر قريبًا.'
+        }
       },
       quickAccess: {
         bible: 'الكتاب المقدس',
@@ -158,7 +220,38 @@ const resources = {
         dailyReadingsCta: 'Открыть чтения на сегодня',
         quickAccessTitle: 'Быстрый доступ',
         messagesTitle: 'Сообщения общины',
-        messagesEmpty: 'Сегодня объявлений нет.'
+        messagesEmpty: 'Сегодня объявлений нет.',
+        heroTitle: 'Сокровища нашей Церкви',
+        heroSubtitle: 'Выберите раздел, чтобы начать чтение и молитву.',
+        dateLabel: 'Сегодня: {{date}}',
+        copticLabel: 'Коптский календарь: {{date}}',
+        copticExample: '10 Тоут 1742',
+        drawerTitle: 'Разделы библиотеки',
+        radial: {
+          bible: 'Священное Писание',
+          kholagy: 'Божественная литургия',
+          fractions: 'Фракции',
+          psalmody: 'Псалмодия',
+          prayers: 'Молитвы',
+          synaxarium: 'Синаксарь'
+        },
+        drawer: {
+          items: {
+            bible: 'Священное Писание',
+            kholagy: 'Божественная литургия',
+            fractions: 'Фракции',
+            psalmody: 'Псалмодия',
+            prayers: 'Молитвы',
+            synaxarium: 'Синаксарь',
+            settings: 'Настройки'
+          }
+        },
+        actions: {
+          follow: 'Подписаться',
+          about: 'О приложении',
+          share: 'Поделиться приложением',
+          comingSoon: 'Скоро появятся новые возможности.'
+        }
       },
       quickAccess: {
         bible: 'Библия',

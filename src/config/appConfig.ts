@@ -30,26 +30,26 @@ export const appConfig = {
   },
   theme: {
     light: {
-      background: "#FFFFFF",
-      surface: "#F7F7F7",
-      textPrimary: "#111111",
-      textSecondary: "#4A4A4A",
-      primary: "#C2185B",
-      accent: "#009688",
-      divider: "#E0E0E0",
-      tabActive: "#C2185B",
-      tabInactive: "#9E9E9E"
+      background: "#041B41",
+      surface: "#0B2E57",
+      textPrimary: "#F2F6FF",
+      textSecondary: "#B5C7F2",
+      primary: "#61C3FF",
+      accent: "#FFB347",
+      divider: "#1A3C68",
+      tabActive: "#61C3FF",
+      tabInactive: "#8FA4D4"
     },
     dark: {
-      background: "#121212",
-      surface: "#1E1E1E",
-      textPrimary: "#FFFFFF",
-      textSecondary: "#C7C7C7",
-      primary: "#FF5C93",
-      accent: "#4DB6AC",
-      divider: "#2A2A2A",
-      tabActive: "#FF5C93",
-      tabInactive: "#9E9E9E"
+      background: "#010B1F",
+      surface: "#071C3D",
+      textPrimary: "#E8F0FF",
+      textSecondary: "#94A9D9",
+      primary: "#61C3FF",
+      accent: "#FFB347",
+      divider: "#0F2647",
+      tabActive: "#61C3FF",
+      tabInactive: "#7388BA"
     },
     typography: {
       baseSize: 16,
