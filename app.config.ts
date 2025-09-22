@@ -23,12 +23,15 @@ if (fs.existsSync(envPath)) {
 }
 
 export default (): ExpoConfig => {
-  const base = appJson.expo ?? {};
+  const baseConfig = (appJson.expo ?? {}) as ExpoConfig;
+  const baseExtra = (baseConfig.extra ?? {}) as Record<string, unknown>;
   return {
-    ...base,
+    ...baseConfig,
     extra: {
-      ...(base.extra ?? {}),
+      ...baseExtra,
       apiBibleKey: process.env.API_BIBLE_KEY ?? '',
+      apiBibleBaseUrl: process.env.API_BIBLE_BASE_URL ?? 'https://api.scripture.api.bible/v1',
+      orthocalBaseUrl: process.env.ORTHOCAL_BASE_URL ?? 'https://orthocal.info/api',
     },
   } as ExpoConfig;
 };

@@ -7,7 +7,20 @@ export const DEFAULT_BIBLE_IDS: Record<string, string> = {
   ru: 'c9e485b1eb295f0c-01', // Synodal Russian Bible
 };
 
-const API_ROOT = 'https://api.scripture.api.bible/v1';
+const DEFAULT_API_ROOT = 'https://api.scripture.api.bible/v1';
+
+const resolveApiRoot = () => {
+  const fromExtra =
+    (Constants.expoConfig?.extra as any)?.apiBibleBaseUrl ??
+    (Constants.manifest as any)?.extra?.apiBibleBaseUrl ??
+    (typeof process !== 'undefined' ? process.env.API_BIBLE_BASE_URL : undefined);
+  if (typeof fromExtra === 'string' && fromExtra.trim().length > 0) {
+    return fromExtra.trim().replace(/\/+$/, '');
+  }
+  return DEFAULT_API_ROOT;
+};
+
+const API_ROOT = resolveApiRoot();
 const CACHE_TTL_BOOKS = 1000 * 60 * 60 * 24; // 24 hours
 const CACHE_TTL_CHAPTERS = 1000 * 60 * 60 * 12; // 12 hours
 const CACHE_TTL_VERSES = 1000 * 60 * 60 * 6; // 6 hours
