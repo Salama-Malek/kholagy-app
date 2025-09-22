@@ -75,7 +75,7 @@ const MenuScreen: React.FC = () => {
   const items = useMemo<MenuItem[]>(
     () => [
       { key: 'bible', icon: 'book-open-page-variant', label: t('menu.bible'), action: { type: 'stack', target: 'Bible' } },
-      { key: 'calendar', icon: 'calendar-month', label: t('menu.calendar'), action: { type: 'stack', target: 'Calendar' } },
+      { key: 'calendar', icon: 'calendar-month', label: t('menu.copticCalendar'), action: { type: 'stack', target: 'Calendar' } },
       { key: 'agpeya', icon: 'book-cross', label: t('menu.agpeya'), action: { type: 'tab', target: 'kholagy', params: { category: 'agpeya' } } },
       { key: 'synaxarium', icon: 'book-open-variant', label: t('menu.synaxarium'), action: { type: 'tab', target: 'kholagy', params: { category: 'synaxarium' } } },
       { key: 'psalmody', icon: 'music-clef-treble', label: t('menu.psalmody'), action: { type: 'tab', target: 'kholagy', params: { category: 'psalmody' } } },

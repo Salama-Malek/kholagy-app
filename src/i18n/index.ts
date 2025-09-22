@@ -27,41 +27,17 @@ const resources = {
         settings: 'Settings'
       },
       home: {
-        dailyReadingsTitle: 'Daily readings',
-        dailyReadingsCta: "View today's readings",
-        quickAccessTitle: 'Quick access',
-        messagesTitle: 'Community messages',
-        messagesEmpty: 'No announcements for today.',
-        heroTitle: 'Our church treasures',
-        heroSubtitle: 'Navigate the liturgies and readings in one place.',
-        dateLabel: 'Today: {{date}}',
-        copticLabel: 'Coptic calendar: {{date}}',
-        copticExample: '10 Tout 1742',
-        drawerTitle: 'Library sections',
-        radial: {
-          bible: 'Holy Bible',
-          kholagy: 'Divine Liturgy',
-          fractions: 'Fractions',
-          psalmody: 'Psalmody',
+        welcomeTitle: 'Peace and grace',
+        welcomeSubtitle: 'Explore the riches of the Coptic Orthodox Church.',
+        todaysDateLabel: 'Today',
+        copticDateLabel: 'Coptic calendar',
+        dateError: 'Unable to load the Coptic date.',
+        cards: {
+          kholagy: 'Kholagy',
           prayers: 'Prayers',
-          synaxarium: 'Synaxarium'
-        },
-        drawer: {
-          items: {
-            bible: 'Holy Bible',
-            kholagy: 'Divine Liturgy',
-            fractions: 'Fractions',
-            psalmody: 'Psalmody',
-            prayers: 'Prayers',
-            synaxarium: 'Synaxarium',
-            settings: 'Settings'
-          }
-        },
-        actions: {
-          follow: 'Follow us',
-          about: 'About the app',
-          share: 'Share the app',
-          comingSoon: 'More features are coming soon.'
+          calendar: 'Coptic Calendar',
+          bible: 'Bible',
+          settings: 'Settings'
         }
       },
       quickAccess: {
@@ -125,19 +101,26 @@ const resources = {
         chapterNumber: 'Chapter {{number}}',
       },
       calendar: {
-        readingsTitle: 'Daily readings',
-        feastsTitle: 'Feasts',
-        fastsTitle: 'Fasting guidelines',
-        searchPlaceholder: 'Search feasts or readings',
-        noneLabel: 'No entries for today.',
-        readingDefaultTitle: 'Reading',
-        feastDefaultTitle: 'Feast',
-        fastDefaultTitle: 'Fast'
+        dailyReadingsTitle: 'Daily readings',
+        readingsEmpty: 'No readings available for this day.',
+        synaxariumTitle: 'Synaxarium',
+        synaxariumEmpty: 'No Synaxarium entries for this day.',
+        errorTitle: 'Unable to load the Coptic calendar.',
+        errorSubtitle: 'Please check your connection and try again.',
+        copticFallback: 'Coptic date unavailable.',
+        copticYearSuffix: 'AM',
+        previousDayHint: 'Show the previous day',
+        nextDayHint: 'Show the next day',
+        services: {
+          matins: 'Matins',
+          vespers: 'Vespers',
+          liturgy: 'Divine Liturgy',
+        },
       },
       menu: {
         librarySection: 'More resources',
         bible: 'Bible',
-        calendar: 'Calendar',
+        copticCalendar: 'Coptic Calendar',
         agpeya: 'Agpeya',
         synaxarium: 'Synaxarium',
         psalmody: 'Psalmody',
@@ -184,41 +167,17 @@ const resources = {
         settings: 'الإعدادات'
       },
       home: {
-        dailyReadingsTitle: 'قراءات اليوم',
-        dailyReadingsCta: 'عرض قراءات اليوم',
-        quickAccessTitle: 'وصول سريع',
-        messagesTitle: 'رسائل الخدمة',
-        messagesEmpty: 'لا توجد رسائل اليوم.',
-        heroTitle: 'كنوز كنيستنا',
-        heroSubtitle: 'اختر القسم الذي ترغب في قراءته أو الصلاة به.',
-        dateLabel: 'اليوم: {{date}}',
-        copticLabel: 'التقويم القبطي: {{date}}',
-        copticExample: '١٠ توت ١٧٤٢',
-        drawerTitle: 'أقسام التطبيق',
-        radial: {
-          bible: 'الكتاب المقدس',
-          kholagy: 'الخولاجي المقدس',
-          fractions: 'الأواشي والكسور',
-          psalmody: 'الإبصلمودية',
+        welcomeTitle: 'سلام ونعمة',
+        welcomeSubtitle: 'اكتشف كنوز الكنيسة القبطية الأرثوذكسية.',
+        todaysDateLabel: 'اليوم',
+        copticDateLabel: 'التقويم القبطي',
+        dateError: 'تعذّر تحميل التاريخ القبطي.',
+        cards: {
+          kholagy: 'الخولاجي',
           prayers: 'الصلوات',
-          synaxarium: 'السنكسار'
-        },
-        drawer: {
-          items: {
-            bible: 'الكتاب المقدس',
-            kholagy: 'الخولاجي المقدس',
-            fractions: 'الأواشي والكسور',
-            psalmody: 'الإبصلمودية',
-            prayers: 'الصلوات',
-            synaxarium: 'السنكسار',
-            settings: 'الإعدادات'
-          }
-        },
-        actions: {
-          follow: 'تابعنا',
-          about: 'عن التطبيق',
-          share: 'مشاركة التطبيق',
-          comingSoon: 'الميزة ستتوفر قريبًا.'
+          calendar: 'التقويم القبطي',
+          bible: 'الكتاب المقدس',
+          settings: 'الإعدادات'
         }
       },
       quickAccess: {
@@ -282,19 +241,26 @@ const resources = {
         chapterNumber: 'الإصحاح {{number}}',
       },
       calendar: {
-        readingsTitle: 'قراءات اليوم',
-        feastsTitle: 'الأعياد',
-        fastsTitle: 'أنظمة الصوم',
-        searchPlaceholder: 'ابحث في القراءات أو الأعياد',
-        noneLabel: 'لا توجد بيانات اليوم.',
-        readingDefaultTitle: 'قراءة',
-        feastDefaultTitle: 'عيد',
-        fastDefaultTitle: 'صوم'
+        dailyReadingsTitle: 'قراءات اليوم',
+        readingsEmpty: 'لا توجد قراءات لهذا اليوم.',
+        synaxariumTitle: 'السنكسار',
+        synaxariumEmpty: 'لا توجد سير قديسين لهذا اليوم.',
+        errorTitle: 'تعذّر تحميل التقويم القبطي.',
+        errorSubtitle: 'تحقق من الاتصال وحاول مرة أخرى.',
+        copticFallback: 'التاريخ القبطي غير متاح.',
+        copticYearSuffix: 'ش.',
+        previousDayHint: 'عرض اليوم السابق',
+        nextDayHint: 'عرض اليوم التالي',
+        services: {
+          matins: 'باكر',
+          vespers: 'عشية',
+          liturgy: 'القداس الإلهي',
+        },
       },
       menu: {
         librarySection: 'موارد إضافية',
         bible: 'الكتاب المقدس',
-        calendar: 'التقويم',
+        copticCalendar: 'التقويم القبطي',
         agpeya: 'الأجبية',
         synaxarium: 'السنكسار',
         psalmody: 'الإبصلمودية',
@@ -341,41 +307,17 @@ const resources = {
         settings: 'Настройки'
       },
       home: {
-        dailyReadingsTitle: 'Ежедневные чтения',
-        dailyReadingsCta: 'Открыть чтения на сегодня',
-        quickAccessTitle: 'Быстрый доступ',
-        messagesTitle: 'Сообщения общины',
-        messagesEmpty: 'Сегодня объявлений нет.',
-        heroTitle: 'Сокровища нашей Церкви',
-        heroSubtitle: 'Выберите раздел, чтобы начать чтение и молитву.',
-        dateLabel: 'Сегодня: {{date}}',
-        copticLabel: 'Коптский календарь: {{date}}',
-        copticExample: '10 Тоут 1742',
-        drawerTitle: 'Разделы библиотеки',
-        radial: {
-          bible: 'Священное Писание',
-          kholagy: 'Божественная литургия',
-          fractions: 'Фракции',
-          psalmody: 'Псалмодия',
+        welcomeTitle: 'Мир и благодать',
+        welcomeSubtitle: 'Исследуйте сокровища Коптской Православной Церкви.',
+        todaysDateLabel: 'Сегодня',
+        copticDateLabel: 'Коптский календарь',
+        dateError: 'Не удалось загрузить коптскую дату.',
+        cards: {
+          kholagy: 'Литургии',
           prayers: 'Молитвы',
-          synaxarium: 'Синаксарь'
-        },
-        drawer: {
-          items: {
-            bible: 'Священное Писание',
-            kholagy: 'Божественная литургия',
-            fractions: 'Фракции',
-            psalmody: 'Псалмодия',
-            prayers: 'Молитвы',
-            synaxarium: 'Синаксарь',
-            settings: 'Настройки'
-          }
-        },
-        actions: {
-          follow: 'Подписаться',
-          about: 'О приложении',
-          share: 'Поделиться приложением',
-          comingSoon: 'Скоро появятся новые возможности.'
+          calendar: 'Коптский календарь',
+          bible: 'Библия',
+          settings: 'Настройки'
         }
       },
       quickAccess: {
@@ -439,19 +381,26 @@ const resources = {
         chapterNumber: 'Глава {{number}}',
       },
       calendar: {
-        readingsTitle: 'Чтения дня',
-        feastsTitle: 'Праздники',
-        fastsTitle: 'Посты',
-        searchPlaceholder: 'Поиск чтений или праздников',
-        noneLabel: 'На сегодня нет записей.',
-        readingDefaultTitle: 'Чтение',
-        feastDefaultTitle: 'Праздник',
-        fastDefaultTitle: 'Пост'
+        dailyReadingsTitle: 'Ежедневные чтения',
+        readingsEmpty: 'Чтения для этого дня отсутствуют.',
+        synaxariumTitle: 'Синаксарь',
+        synaxariumEmpty: 'На этот день нет записей Синаксаря.',
+        errorTitle: 'Не удалось загрузить коптский календарь.',
+        errorSubtitle: 'Проверьте подключение и повторите попытку.',
+        copticFallback: 'Коптская дата недоступна.',
+        copticYearSuffix: 'АМ',
+        previousDayHint: 'Показать предыдущий день',
+        nextDayHint: 'Показать следующий день',
+        services: {
+          matins: 'Утреня',
+          vespers: 'Вечерня',
+          liturgy: 'Божественная литургия',
+        },
       },
       menu: {
         librarySection: 'Дополнительные разделы',
         bible: 'Библия',
-        calendar: 'Календарь',
+        copticCalendar: 'Коптский календарь',
         agpeya: 'Агпея',
         synaxarium: 'Синаксарь',
         psalmody: 'Псалмодия',

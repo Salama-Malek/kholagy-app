@@ -2,9 +2,20 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
-if (!config.resolver.assetExts.includes('md')) {
-  config.resolver.assetExts.push('md');
+config.transformer = {
+  ...config.transformer,
+  babelTransformerPath: require.resolve('react-native-svg-transformer'),
+};
+
+const { assetExts, sourceExts } = config.resolver;
+
+if (!assetExts.includes('md')) {
+  assetExts.push('md');
 }
-config.resolver.sourceExts = config.resolver.sourceExts.filter((ext) => ext !== 'md');
+
+config.resolver.assetExts = assetExts.filter((ext) => ext !== 'svg');
+config.resolver.sourceExts = sourceExts
+  .filter((ext) => ext !== 'md')
+  .concat(sourceExts.includes('svg') ? [] : ['svg']);
 
 module.exports = config;
