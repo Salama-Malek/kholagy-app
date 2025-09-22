@@ -43,8 +43,12 @@ const Tabs = () => {
         tabBarActiveTintColor: palette.tabActive,
         tabBarInactiveTintColor: palette.tabInactive,
         tabBarStyle: {
-          backgroundColor: palette.surface,
-          borderTopColor: palette.divider,
+          backgroundColor: `${palette.surface}CC`,
+          borderTopWidth: 0,
+          borderTopColor: 'transparent',
+          elevation: 0,
+          height: 64,
+          paddingBottom: 8,
           direction: isRTL ? 'rtl' : 'ltr',
         },
         headerStyle: {
@@ -78,6 +82,7 @@ const Tabs = () => {
             initialParams={definition.initialParams}
             options={{
               title: label,
+              headerShown: tab.key === 'home' ? false : undefined,
               tabBarIcon: ({ color }) => (
                 <MaterialCommunityIcons
                   name={iconName as any}
