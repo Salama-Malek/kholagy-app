@@ -7,6 +7,8 @@
   | 'agpeya'
   | 'synaxarium'
   | 'psalmody'
+  | 'quotes'
+  | 'encyclopedia'
   | 'feastsCalendar';
 
 export type TabKey = 'kholagy' | 'fractions' | 'prayers' | 'settings';

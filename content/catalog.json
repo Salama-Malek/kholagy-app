@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "kholagy/basil",
     "titles": {
@@ -15,6 +15,136 @@
       "cop": "basil",
       "arcop": "basil"
     },
-    "season": "annual"
+    "season": "annual",
+    "tags": ["liturgy", "divineLiturgy"]
+  },
+  {
+    "id": "fractions/common",
+    "titles": {
+      "ar": "كسر عام للقداس",
+      "en": "Common Fraction",
+      "ru": "Общее дробление"
+    },
+    "category": "fractions",
+    "languages": ["ar", "en", "ru"],
+    "slugs": {
+      "ar": "common",
+      "en": "common",
+      "ru": "common"
+    },
+    "season": "annual",
+    "tags": ["fraction", "basil"]
+  },
+  {
+    "id": "prayers/thanksgiving",
+    "titles": {
+      "ar": "صلاة الشكر",
+      "en": "Prayer of Thanksgiving",
+      "ru": "Молитва благодарения"
+    },
+    "category": "prayers",
+    "languages": ["ar", "en", "ru"],
+    "slugs": {
+      "ar": "thanksgiving",
+      "en": "thanksgiving",
+      "ru": "thanksgiving"
+    },
+    "tags": ["daily", "introductory"]
+  },
+  {
+    "id": "agpeya/matins",
+    "titles": {
+      "ar": "تسبحة نصف الليل",
+      "en": "Midnight Praises",
+      "ru": "Полуночные хвалы"
+    },
+    "category": "agpeya",
+    "languages": ["ar", "en", "ru"],
+    "slugs": {
+      "ar": "matins",
+      "en": "matins",
+      "ru": "matins"
+    },
+    "tags": ["midnight", "praise"]
+  },
+  {
+    "id": "agpeya/vespers",
+    "titles": {
+      "ar": "صلاة الغروب",
+      "en": "Vespers",
+      "ru": "Вечерня"
+    },
+    "category": "agpeya",
+    "languages": ["ar", "en", "ru"],
+    "slugs": {
+      "ar": "vespers",
+      "en": "vespers",
+      "ru": "vespers"
+    },
+    "tags": ["ninthHour"]
+  },
+  {
+    "id": "synaxarium/today",
+    "titles": {
+      "ar": "السنكسار اليومي",
+      "en": "Daily Synaxarium",
+      "ru": "Ежедневный синаксарь"
+    },
+    "category": "synaxarium",
+    "languages": ["ar", "en", "ru"],
+    "slugs": {
+      "ar": "today",
+      "en": "today",
+      "ru": "today"
+    },
+    "tags": ["saints", "daily"]
+  },
+  {
+    "id": "psalmody/annual",
+    "titles": {
+      "ar": "الإبصلمودية السنوية",
+      "en": "Annual Psalmody",
+      "ru": "Годичная псалмодия"
+    },
+    "category": "psalmody",
+    "languages": ["ar", "en", "ru"],
+    "slugs": {
+      "ar": "annual",
+      "en": "annual",
+      "ru": "annual"
+    },
+    "tags": ["praise", "outline"]
+  },
+  {
+    "id": "quotes/daily",
+    "titles": {
+      "ar": "أقوال يومية",
+      "en": "Daily Quotes",
+      "ru": "Ежедневные цитаты"
+    },
+    "category": "quotes",
+    "languages": ["ar", "en", "ru"],
+    "slugs": {
+      "ar": "daily",
+      "en": "daily",
+      "ru": "daily"
+    },
+    "tags": ["meditation"]
+  },
+  {
+    "id": "encyclopedia/intro",
+    "titles": {
+      "ar": "موسوعة أرثوذكسية",
+      "en": "Orthodox Encyclopedia",
+      "ru": "Православная энциклопедия"
+    },
+    "category": "encyclopedia",
+    "languages": ["ar", "en", "ru"],
+    "slugs": {
+      "ar": "intro",
+      "en": "intro",
+      "ru": "intro"
+    },
+    "tags": ["reference"]
   }
 ]

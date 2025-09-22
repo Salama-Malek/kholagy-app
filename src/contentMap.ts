@@ -2,11 +2,35 @@
 // Do not edit manually as changes will be overwritten.
 
 export const contentMap: Record<string, () => number> = {
+  'agpeya/matins:ar': () => require('../content/agpeya/matins.ar.md'),
+  'agpeya/matins:en': () => require('../content/agpeya/matins.en.md'),
+  'agpeya/matins:ru': () => require('../content/agpeya/matins.ru.md'),
+  'agpeya/vespers:ar': () => require('../content/agpeya/vespers.ar.md'),
+  'agpeya/vespers:en': () => require('../content/agpeya/vespers.en.md'),
+  'agpeya/vespers:ru': () => require('../content/agpeya/vespers.ru.md'),
+  'encyclopedia/intro:ar': () => require('../content/encyclopedia/intro.ar.md'),
+  'encyclopedia/intro:en': () => require('../content/encyclopedia/intro.en.md'),
+  'encyclopedia/intro:ru': () => require('../content/encyclopedia/intro.ru.md'),
+  'fractions/common:ar': () => require('../content/fractions/common.ar.md'),
+  'fractions/common:en': () => require('../content/fractions/common.en.md'),
+  'fractions/common:ru': () => require('../content/fractions/common.ru.md'),
   'kholagy/basil:ar': () => require('../content/kholagy/basil.ar.md'),
   'kholagy/basil:arcop': () => require('../content/kholagy/basil.arcop.md'),
   'kholagy/basil:cop': () => require('../content/kholagy/basil.cop.md'),
   'kholagy/basil:en': () => require('../content/kholagy/basil.en.md'),
   'kholagy/basil:ru': () => require('../content/kholagy/basil.ru.md'),
+  'prayers/thanksgiving:ar': () => require('../content/prayers/thanksgiving.ar.md'),
+  'prayers/thanksgiving:en': () => require('../content/prayers/thanksgiving.en.md'),
+  'prayers/thanksgiving:ru': () => require('../content/prayers/thanksgiving.ru.md'),
+  'psalmody/annual:ar': () => require('../content/psalmody/annual.ar.md'),
+  'psalmody/annual:en': () => require('../content/psalmody/annual.en.md'),
+  'psalmody/annual:ru': () => require('../content/psalmody/annual.ru.md'),
+  'quotes/daily:ar': () => require('../content/quotes/daily.ar.md'),
+  'quotes/daily:en': () => require('../content/quotes/daily.en.md'),
+  'quotes/daily:ru': () => require('../content/quotes/daily.ru.md'),
+  'synaxarium/today:ar': () => require('../content/synaxarium/today.ar.md'),
+  'synaxarium/today:en': () => require('../content/synaxarium/today.en.md'),
+  'synaxarium/today:ru': () => require('../content/synaxarium/today.ru.md'),
 };
 
 export type ContentKey = keyof typeof contentMap;

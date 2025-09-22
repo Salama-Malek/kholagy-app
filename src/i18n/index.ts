@@ -141,6 +141,8 @@ const resources = {
         agpeya: 'Agpeya',
         synaxarium: 'Synaxarium',
         psalmody: 'Psalmody',
+        quotes: 'Quotes',
+        encyclopedia: 'Encyclopedia',
         settings: 'Settings'
       },
       settings: {
@@ -296,6 +298,8 @@ const resources = {
         agpeya: 'الأجبية',
         synaxarium: 'السنكسار',
         psalmody: 'الإبصلمودية',
+        quotes: 'أقوال روحية',
+        encyclopedia: 'موسوعة',
         settings: 'الإعدادات'
       },
       settings: {
@@ -451,6 +455,8 @@ const resources = {
         agpeya: 'Агпея',
         synaxarium: 'Синаксарь',
         psalmody: 'Псалмодия',
+        quotes: 'Цитаты',
+        encyclopedia: 'Энциклопедия',
         settings: 'Настройки'
       },
       settings: {

@@ -49,7 +49,7 @@ The default Arabic, English, and Russian Bible IDs are defined in `DEFAULT_BIBLE
 ## Navigation & Menu Updates
 
 - Bottom tabs remain focused on Kholagy, Fractions, Prayers, and Settings. The Settings tab now opens the localized menu list from `src/screens/MenuScreen.tsx`.
-- The side menu includes Bible and Calendar entries alongside existing resources (Agpeya, Synaxarium, Psalmody). Selecting Bible or Calendar pushes the new stack screens, while other items deep link into the appropriate tab.
+- The side menu includes Bible and Calendar entries alongside existing resources (Agpeya, Synaxarium, Psalmody, Quotes, Encyclopedia). Selecting Bible or Calendar pushes the new stack screens, while other items deep link into the appropriate tab.
 - A global search context (`src/context/SearchContext.tsx`) keeps Bible, Calendar, and liturgy search results in sync across screens.
 
 ## Offline Caching
