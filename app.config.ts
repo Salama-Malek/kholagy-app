@@ -29,9 +29,15 @@ export default (): ExpoConfig => {
     ...baseConfig,
     extra: {
       ...baseExtra,
-      apiBibleKey: process.env.API_BIBLE_KEY ?? '',
-      apiBibleBaseUrl: process.env.API_BIBLE_BASE_URL ?? 'https://api.scripture.api.bible/v1',
-      orthocalBaseUrl: process.env.ORTHOCAL_BASE_URL ?? 'https://orthocal.info/api',
+      apiBibleKey: process.env.API_BIBLE_KEY ?? process.env.EXPO_PUBLIC_API_BIBLE_KEY ?? '',
+      apiBibleBaseUrl:
+        process.env.API_BIBLE_BASE_URL ??
+        process.env.EXPO_PUBLIC_API_BIBLE_BASE_URL ??
+        'https://api.scripture.api.bible/v1',
+      orthocalBaseUrl:
+        process.env.ORTHOCAL_BASE_URL ??
+        process.env.EXPO_PUBLIC_ORTHOCAL_BASE_URL ??
+        'https://orthocal.info/api',
     },
   } as ExpoConfig;
 };

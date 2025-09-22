@@ -9,11 +9,19 @@ export const DEFAULT_BIBLE_IDS: Record<string, string> = {
 
 const DEFAULT_API_ROOT = 'https://api.scripture.api.bible/v1';
 
+type ExpoExtra = {
+  apiBibleKey?: string;
+  apiBibleBaseUrl?: string;
+};
+
 const resolveApiRoot = () => {
   const fromExtra =
-    (Constants.expoConfig?.extra as any)?.apiBibleBaseUrl ??
-    (Constants.manifest as any)?.extra?.apiBibleBaseUrl ??
-    (typeof process !== 'undefined' ? process.env.API_BIBLE_BASE_URL : undefined);
+    (Constants.expoConfig?.extra as ExpoExtra | undefined)?.apiBibleBaseUrl ??
+    ((Constants as any).manifest2?.extra as ExpoExtra | undefined)?.apiBibleBaseUrl ??
+    ((Constants.manifest as any)?.extra as ExpoExtra | undefined)?.apiBibleBaseUrl ??
+    (typeof process !== 'undefined'
+      ? process.env.API_BIBLE_BASE_URL ?? process.env.EXPO_PUBLIC_API_BIBLE_BASE_URL
+      : undefined);
   if (typeof fromExtra === 'string' && fromExtra.trim().length > 0) {
     return fromExtra.trim().replace(/\/+$/, '');
   }
@@ -27,14 +35,20 @@ const CACHE_TTL_VERSES = 1000 * 60 * 60 * 6; // 6 hours
 const CACHE_TTL_SEARCH = 1000 * 60 * 30; // 30 minutes
 
 const getApiKey = (): string => {
-  const fromExpo =
-    Constants.expoConfig?.extra?.apiBibleKey ??
-    (Constants.manifest as any)?.extra?.apiBibleKey ??
+  const fromExtra =
+    (Constants.expoConfig?.extra as ExpoExtra | undefined)?.apiBibleKey ??
+    ((Constants as any).manifest2?.extra as ExpoExtra | undefined)?.apiBibleKey ??
+    ((Constants.manifest as any)?.extra as ExpoExtra | undefined)?.apiBibleKey ??
     '';
-  if (!fromExpo) {
+  const fromEnv =
+    typeof process !== 'undefined'
+      ? (process.env.API_BIBLE_KEY ?? process.env.EXPO_PUBLIC_API_BIBLE_KEY ?? '').trim()
+      : '';
+  const apiKey = (typeof fromExtra === 'string' ? fromExtra.trim() : '') || fromEnv;
+  if (!apiKey) {
     throw new Error('Missing API.Bible key. Add API_BIBLE_KEY to your .env file.');
   }
-  return fromExpo;
+  return apiKey;
 };
 
 const buildUrl = (endpoint: string, params: Record<string, string | number | undefined> = {}) => {
