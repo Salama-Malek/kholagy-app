@@ -1,0 +1,20 @@
+﻿[
+  {
+    "id": "kholagy/basil",
+    "titles": {
+      "ar": "قداس القديس باسيليوس",
+      "en": "Liturgy of St. Basil",
+      "ru": "Литургия св. Василия"
+    },
+    "category": "kholagy",
+    "languages": ["ar", "en", "ru", "cop", "arcop"],
+    "slugs": {
+      "ar": "basil",
+      "en": "basil",
+      "ru": "basil",
+      "cop": "basil",
+      "arcop": "basil"
+    },
+    "season": "annual"
+  }
+]
