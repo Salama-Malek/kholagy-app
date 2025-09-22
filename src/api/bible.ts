@@ -77,6 +77,13 @@ const request = async <T>(endpoint: string, params: Record<string, string | numb
   return (await response.json()) as T;
 };
 
+const normalizeVerseText = (value?: string | null): string => {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+  return '';
+};
+
 export interface BibleBook {
   id: string;
   abbreviation?: string;
@@ -145,7 +152,7 @@ interface VerseResponse {
     bookId: string;
     chapterId: string;
     reference: string;
-    text: string;
+    text?: string | null;
   }>;
 }
 
@@ -167,7 +174,7 @@ export const getVerses = async (chapterId: string, bibleId?: string, lang?: stri
     chapterId: entry.chapterId,
     number: entry.reference.split(':').pop() ?? '',
     reference: entry.reference,
-    text: entry.text,
+    text: normalizeVerseText(entry.text),
   }));
 };
 
@@ -179,7 +186,7 @@ interface SearchResponse {
       bibleId: string;
       bookId: string;
       chapterId: string;
-      text: string;
+      text?: string | null;
       reference: string;
     }>;
   };
@@ -207,6 +214,6 @@ export const search = async (query: string, bibleId?: string, lang?: string): Pr
     bookId: verse.bookId,
     chapterId: verse.chapterId,
     reference: verse.reference,
-    text: verse.text,
+    text: normalizeVerseText(verse.text),
   }));
 };
