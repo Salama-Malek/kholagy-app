@@ -15,14 +15,14 @@ import {
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Asset } from 'expo-asset';
 import * as Clipboard from 'expo-clipboard';
-import * as FileSystem from 'expo-file-system';
 import { useTranslation } from 'react-i18next';
-import { contentMap } from '../src/contentMap';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAppConfig } from '../src/context/AppConfigContext';
 import { usePreferences } from '../src/context/PreferencesContext';
+import { loadLiturgyDocument, searchLiturgyDocument } from '../src/api/liturgy';
+import { useSearch } from '../src/context/SearchContext';
+import { showToast } from '../src/utils/toast';
 import type { RootStackParamList } from '../navigation/types';
 type ReaderRoute = RouteProp<RootStackParamList, 'Reader'>;
 type TocEntry = {
@@ -107,6 +107,7 @@ const ReaderScreen: React.FC = () => {
   const { textLang, fontScale, resolvedTheme, isRTL } = useLanguage();
   const { config } = useAppConfig();
   const { blueBackground } = usePreferences();
+  const { setDomainResults, clearDomain } = useSearch();
   const { t } = useTranslation();
   const scrollViewRef = useRef<ScrollView>(null);
   const bookmarkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -116,6 +117,7 @@ const ReaderScreen: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [activeLanguage, setActiveLanguage] = useState<string>(textLang);
+  const [hasDocument, setHasDocument] = useState<boolean>(true);
   const [bookmarkRestored, setBookmarkRestored] = useState<boolean>(false);
   const itemId = route.params.itemId;
   const palette = config.theme[resolvedTheme];
@@ -125,17 +127,6 @@ const ReaderScreen: React.FC = () => {
   const readerSurface = blueBackground ? '#10335B' : palette.surface;
   const readerTextColor = blueBackground ? '#E6EEFF' : palette.textPrimary;
   const readerMutedColor = blueBackground ? '#B3C4E5' : palette.textSecondary;
-  const contentKey = useMemo(() => {
-    const desiredKey = `${itemId}:${textLang}`;
-    if (contentMap[desiredKey]) {
-      return desiredKey as keyof typeof contentMap;
-    }
-    const fallbackKey = `${itemId}:en`;
-    if (contentMap[fallbackKey]) {
-      return fallbackKey as keyof typeof contentMap;
-    }
-    return null;
-  }, [itemId, textLang]);
   const bookmarkKey = useMemo(() => {
     const lang = activeLanguage || textLang;
     return `digital-kholagy:bookmark:${itemId}:${lang}`;
@@ -149,26 +140,20 @@ const ReaderScreen: React.FC = () => {
     const load = async () => {
       setLoading(true);
       try {
-        if (!contentKey) {
-          setMarkdown('');
-          return;
-        }
-        const assetModule = contentMap[contentKey]();
-        const asset = Asset.fromModule(assetModule);
-        await asset.downloadAsync();
-        const assetUri = asset.localUri ?? asset.uri;
-        if (!assetUri) {
-          setMarkdown('');
-          return;
-        }
-        const contents = await FileSystem.readAsStringAsync(assetUri, { encoding: FileSystem.EncodingType.UTF8 });
+        const document = await loadLiturgyDocument(itemId, textLang);
         if (!isMounted) {
           return;
         }
-        const [, lang] = (contentKey as string).split(':');
-        setActiveLanguage(lang ?? textLang);
-        setMarkdown(contents);
-        const savedOffset = await AsyncStorage.getItem(`digital-kholagy:bookmark:${itemId}:${lang ?? textLang}`);
+        if (!document) {
+          setHasDocument(false);
+          setMarkdown('');
+          return;
+        }
+        setHasDocument(true);
+        setActiveLanguage(document.language ?? textLang);
+        setMarkdown(document.markdown);
+        const bookmarkLang = document.language ?? textLang;
+        const savedOffset = await AsyncStorage.getItem(`digital-kholagy:bookmark:${itemId}:${bookmarkLang}`);
         if (savedOffset) {
           const offsetValue = Number(savedOffset);
           if (!Number.isNaN(offsetValue)) {
@@ -184,6 +169,7 @@ const ReaderScreen: React.FC = () => {
       } catch (error) {
         console.warn('Failed to load content', error);
         if (isMounted) {
+          setHasDocument(false);
           setMarkdown('');
         }
       } finally {
@@ -196,7 +182,7 @@ const ReaderScreen: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [contentKey, itemId, textLang]);
+  }, [itemId, textLang]);
   useEffect(() => {
     return () => {
       if (bookmarkTimeout.current) {
@@ -226,20 +212,38 @@ const ReaderScreen: React.FC = () => {
     return markdown.replace(pattern, '**$1**');
   }, [markdown, searchTerm]);
   const toc = useMemo(() => parseHeadings(markdown), [markdown]);
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      clearDomain('liturgy');
+      return;
+    }
+    const hits = searchLiturgyDocument(markdown, searchTerm.trim()).map((hit) => ({
+      ...hit,
+      id: `${itemId}:${activeLanguage}:${hit.id}`,
+    }));
+    setDomainResults('liturgy', { query: searchTerm.trim(), results: hits });
+  }, [activeLanguage, clearDomain, itemId, markdown, searchTerm, setDomainResults]);
+  useEffect(() => {
+    return () => {
+      clearDomain('liturgy');
+    };
+  }, [clearDomain]);
   const handleCopy = useCallback(async () => {
     try {
       await Clipboard.setStringAsync(markdown);
+      showToast(t('reader.toastCopied'));
     } catch (error) {
       console.warn('Failed to copy text', error);
     }
-  }, [markdown]);
+  }, [markdown, t]);
   const handleShare = useCallback(async () => {
     try {
       await Share.share({ message: markdown });
+      showToast(t('reader.toastShared'));
     } catch (error) {
       console.warn('Failed to share text', error);
     }
-  }, [markdown]);
+  }, [markdown, t]);
   const handleTocPress = useCallback((slug: string) => {
     const position = headingOffsetsRef.current[slug];
     if (position !== undefined) {
@@ -289,7 +293,7 @@ const ReaderScreen: React.FC = () => {
       </View>
     );
   }
-  if (!contentKey) {
+  if (!hasDocument) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, backgroundColor: readerBackground }]}>
         <Text style={[styles.fallback, { color: readerTextColor }]}>

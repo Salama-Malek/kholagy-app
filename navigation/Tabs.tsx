@@ -4,10 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAppConfig } from '../src/context/AppConfigContext';
 import ListScreen from '../screens/ListScreen';
-import SettingsScreen from '../screens/SettingsScreen';
-import HomeScreen from '../screens/HomeScreen';
-import BibleScreen from '../screens/BibleScreen';
-import MoreScreen from '../screens/MoreScreen';
+import MenuScreen from '../src/screens/MenuScreen';
 import { TabKey, TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -19,13 +16,10 @@ const iconAlias: Record<string, string> = {
 };
 
 const screenRegistry: Record<TabKey, { component: React.ComponentType<any>; initialParams?: Record<string, unknown> }> = {
-  home: { component: HomeScreen },
-  bible: { component: BibleScreen },
   kholagy: { component: ListScreen, initialParams: { category: 'kholagy' } },
-  more: { component: MoreScreen },
   fractions: { component: ListScreen, initialParams: { category: 'fractions' } },
   prayers: { component: ListScreen, initialParams: { category: 'prayers' } },
-  settings: { component: SettingsScreen },
+  settings: { component: MenuScreen },
 };
 
 const Tabs = () => {

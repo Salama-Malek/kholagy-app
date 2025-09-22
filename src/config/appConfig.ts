@@ -63,10 +63,10 @@ export const appConfig = {
   navigation: {
     type: 'bottomTabs' as const,
     tabs: [
-      { key: 'home', title: { ar: 'الرئيسية', en: 'Home', ru: 'Главная' }, icon: 'home' },
-      { key: 'bible', title: { ar: 'الكتاب المقدس', en: 'Bible', ru: 'Библия' }, icon: 'book' },
       { key: 'kholagy', title: { ar: 'السِكِّيل/الخولاجي', en: 'Kholagy', ru: 'Литургии' }, icon: 'church' },
-      { key: 'more', title: { ar: 'أخرى', en: 'More', ru: 'Еще' }, icon: 'more-horiz' }
+      { key: 'fractions', title: { ar: 'الأواشي/الكسور', en: 'Fractions', ru: 'Фракции' }, icon: 'bread-slice' },
+      { key: 'prayers', title: { ar: 'صلوات', en: 'Prayers', ru: 'Молитвы' }, icon: 'hands-pray' },
+      { key: 'settings', title: { ar: 'الإعدادات', en: 'Settings', ru: 'Настройки' }, icon: 'settings' }
     ],
     headers: {
       style: 'elevated' as const,
