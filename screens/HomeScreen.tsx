@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   Alert,
   Pressable,
@@ -12,14 +13,21 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { TabParamList } from '../navigation/types';
+import type { RootStackParamList, TabParamList } from '../navigation/types';
 import { useAppConfig } from '../src/context/AppConfigContext';
 import { useLanguage } from '../src/context/LanguageContext';
 
-type NavigationTarget = {
-  tab: keyof TabParamList;
-  params?: TabParamList[keyof TabParamList];
-};
+type NavigationTarget =
+  | {
+      type: 'tab';
+      tab: keyof TabParamList;
+      params?: TabParamList[keyof TabParamList];
+    }
+  | {
+      type: 'stack';
+      screen: keyof RootStackParamList;
+      params?: RootStackParamList[keyof RootStackParamList];
+    };
 
 type RadialItem = {
   key: string;
@@ -35,22 +43,22 @@ type DrawerItem = {
 };
 
 const RADIAL_ITEMS: RadialItem[] = [
-  { key: 'bible', icon: 'book-cross', angle: -90, target: { tab: 'bible' } },
-  { key: 'kholagy', icon: 'church', angle: -30, target: { tab: 'kholagy', params: { category: 'kholagy' } } },
-  { key: 'fractions', icon: 'bread-slice', angle: 30, target: { tab: 'kholagy', params: { category: 'fractions' } } },
-  { key: 'psalmody', icon: 'music-note-outline', angle: 90, target: { tab: 'kholagy', params: { category: 'psalmody' } } },
-  { key: 'prayers', icon: 'hands-pray', angle: 150, target: { tab: 'kholagy', params: { category: 'prayers' } } },
-  { key: 'synaxarium', icon: 'book-open-page-variant', angle: 210, target: { tab: 'kholagy', params: { category: 'synaxarium' } } },
+  { key: 'bible', icon: 'book-cross', angle: -90, target: { type: 'stack', screen: 'Bible' } },
+  { key: 'kholagy', icon: 'church', angle: -30, target: { type: 'tab', tab: 'kholagy', params: { category: 'kholagy' } } },
+  { key: 'fractions', icon: 'bread-slice', angle: 30, target: { type: 'tab', tab: 'kholagy', params: { category: 'fractions' } } },
+  { key: 'psalmody', icon: 'music-note-outline', angle: 90, target: { type: 'tab', tab: 'kholagy', params: { category: 'psalmody' } } },
+  { key: 'prayers', icon: 'hands-pray', angle: 150, target: { type: 'tab', tab: 'kholagy', params: { category: 'prayers' } } },
+  { key: 'synaxarium', icon: 'book-open-page-variant', angle: 210, target: { type: 'tab', tab: 'kholagy', params: { category: 'synaxarium' } } },
 ];
 
 const DRAWER_ITEMS: DrawerItem[] = [
-  { key: 'bible', icon: 'book-cross', target: { tab: 'bible' } },
-  { key: 'kholagy', icon: 'church', target: { tab: 'kholagy', params: { category: 'kholagy' } } },
-  { key: 'fractions', icon: 'bread-slice', target: { tab: 'kholagy', params: { category: 'fractions' } } },
-  { key: 'prayers', icon: 'hands-pray', target: { tab: 'kholagy', params: { category: 'prayers' } } },
-  { key: 'psalmody', icon: 'music-note-outline', target: { tab: 'kholagy', params: { category: 'psalmody' } } },
-  { key: 'synaxarium', icon: 'book-open-page-variant', target: { tab: 'kholagy', params: { category: 'synaxarium' } } },
-  { key: 'settings', icon: 'cog-outline', target: { tab: 'more' } },
+  { key: 'bible', icon: 'book-cross', target: { type: 'stack', screen: 'Bible' } },
+  { key: 'kholagy', icon: 'church', target: { type: 'tab', tab: 'kholagy', params: { category: 'kholagy' } } },
+  { key: 'fractions', icon: 'bread-slice', target: { type: 'tab', tab: 'kholagy', params: { category: 'fractions' } } },
+  { key: 'prayers', icon: 'hands-pray', target: { type: 'tab', tab: 'kholagy', params: { category: 'prayers' } } },
+  { key: 'psalmody', icon: 'music-note-outline', target: { type: 'tab', tab: 'kholagy', params: { category: 'psalmody' } } },
+  { key: 'synaxarium', icon: 'book-open-page-variant', target: { type: 'tab', tab: 'kholagy', params: { category: 'synaxarium' } } },
+  { key: 'settings', icon: 'cog-outline', target: { type: 'tab', tab: 'settings' } },
 ];
 
 const ACTIONS = [
@@ -293,6 +301,12 @@ const HomeScreen: React.FC = () => {
   const handleNavigate = useCallback(
     (target: NavigationTarget) => {
       setMenuOpen(false);
+      if (target.type === 'stack') {
+        navigation
+          .getParent<NativeStackNavigationProp<RootStackParamList>>()
+          ?.navigate(target.screen as any, target.params as any);
+        return;
+      }
       navigation.navigate(target.tab as any, target.params as any);
     },
     [navigation],

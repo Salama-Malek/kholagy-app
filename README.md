@@ -35,6 +35,17 @@ Digital Kholagy is a multi-language Orthodox liturgical companion inspired by th
 - **Orthocal API** powers the liturgical calendar in `src/api/orthocal.ts`. Daily readings, feasts, and fast information are fetched for the selected date, using the `ORTHOCAL_BASE_URL` to build requests, and cached to provide an offline history.
 - Local markdown liturgy texts are wrapped by `src/api/liturgy.ts`, which ReaderScreen now consumes to keep markdown loading logic consistent with the network APIs.
 
+## Bible Navigation
+
+- The Bible stack provides a segmented control for Old and New Testaments and groups books into Orthodox-friendly sections (Law, Historical, Wisdom, Prophets, Deuterocanon, Gospels, Acts, Epistles, Revelation). Deuterocanonical books are surfaced alongside the Old Testament set for Arabic, English, and Russian presets.
+- Translation chips appear above the book list and default to the closest language available from `DEFAULT_BIBLE_IDS`. Tap a chip to switch Bibles; the layout respects RTL languages automatically.
+- A search bar calls the API.Bible `/search` endpoint and opens the matching chapter when a result is selected.
+- Selecting a book opens the chapter list, and selecting a chapter loads the JSON chapter content with scrollable verse cards. Each verse exposes bookmark, copy, and share actions.
+
+### Changing the default Bible translation
+
+The default Arabic, English, and Russian Bible IDs are defined in `DEFAULT_BIBLE_IDS` inside `src/api/bible.ts`. Update the mapping (or add more entries) to point at different API.Bible translation identifiers. The home screen automatically detects which of the configured IDs are available from `/v1/bibles` and chooses the best match for the current text language.
+
 ## Navigation & Menu Updates
 
 - Bottom tabs remain focused on Kholagy, Fractions, Prayers, and Settings. The Settings tab now opens the localized menu list from `src/screens/MenuScreen.tsx`.
@@ -43,7 +54,7 @@ Digital Kholagy is a multi-language Orthodox liturgical companion inspired by th
 
 ## Offline Caching
 
-- Bible queries (books, chapters, verses, search results) persist in AsyncStorage for quick repeat access and gracefully fall back to the cached payload when the network is unavailable.
+- Bible queries (bibles list, grouped books, chapters, verses, search results) persist in AsyncStorage for quick repeat access and gracefully fall back to the cached payload when the network is unavailable. The last opened chapter (including rendered verse text) is saved separately so it can be restored with an offline banner when requests fail.
 - Calendar responses cache per date for 12 hours, ensuring daily readings remain available even when offline.
 - Liturgy scroll position bookmarks continue to save automatically; copy/share actions now surface quick toasts.
 
