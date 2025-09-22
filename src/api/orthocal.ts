@@ -1,6 +1,22 @@
+import Constants from 'expo-constants';
 import { fetchWithCache } from './cache';
 
-const API_ROOT = 'https://orthocal.info/api/oca';
+const DEFAULT_API_ROOT = 'https://orthocal.info/api';
+
+const joinUrl = (base: string, path: string) => `${base.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`;
+
+const resolveApiRoot = () => {
+  const fromExtra =
+    (Constants.expoConfig?.extra as any)?.orthocalBaseUrl ??
+    (Constants.manifest as any)?.extra?.orthocalBaseUrl ??
+    (typeof process !== 'undefined' ? process.env.ORTHOCAL_BASE_URL : undefined);
+  if (typeof fromExtra === 'string' && fromExtra.trim().length > 0) {
+    return fromExtra.trim().replace(/\/+$/, '');
+  }
+  return DEFAULT_API_ROOT;
+};
+
+const API_ROOT = joinUrl(resolveApiRoot(), 'oca');
 const CACHE_TTL_DAY = 1000 * 60 * 60 * 12; // 12 hours
 
 type QueryParams = Record<string, string | number | undefined>;
@@ -16,7 +32,7 @@ const toDateParam = (input: Date | string): string => {
 };
 
 const buildUrl = (path: string, params: QueryParams = {}) => {
-  const url = new URL(`${API_ROOT}${path}`);
+  const url = new URL(joinUrl(API_ROOT, path));
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined || value === null) {
       return;

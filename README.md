@@ -8,11 +8,17 @@ Digital Kholagy is a multi-language Orthodox liturgical companion inspired by th
    ```bash
    npm install
    ```
-2. Copy the environment template and provide your API.Bible key:
+2. Copy the environment template and provide your API credentials/base URLs:
    ```bash
    cp .env.example .env
    ```
-   The `API_BIBLE_KEY` value is injected into the Expo runtime via `app.config.ts` and consumed through `expo-constants`.
+   Update the `.env` file with your keys (safe to keep the default base URLs unless you proxy the services):
+   ```
+   API_BIBLE_KEY=your_api_bible_key_here
+   API_BIBLE_BASE_URL=https://api.scripture.api.bible/v1
+   ORTHOCAL_BASE_URL=https://orthocal.info/api
+   ```
+   These values are injected into the Expo runtime via `app.config.ts` and consumed in the API clients through `expo-constants`.
 3. Generate the content map (re-run whenever you add or rename markdown files):
    ```bash
    npm run build:content
@@ -25,8 +31,8 @@ Digital Kholagy is a multi-language Orthodox liturgical companion inspired by th
 
 ## External Data Sources
 
-- **API.Bible** is used for the Holy Bible screen. Requests require the API key mentioned above and are routed through `src/api/bible.ts`. Books, chapters, verses, and search responses are cached in AsyncStorage so previously viewed passages remain available offline.
-- **Orthocal API** powers the liturgical calendar in `src/api/orthocal.ts`. Daily readings, feasts, and fast information are fetched for the selected date and cached to provide an offline history.
+- **API.Bible** is used for the Holy Bible screen. Requests require the API key mentioned above and are routed through `src/api/bible.ts`, which reads the base URL from `API_BIBLE_BASE_URL`. Books, chapters, verses, and search responses are cached in AsyncStorage so previously viewed passages remain available offline.
+- **Orthocal API** powers the liturgical calendar in `src/api/orthocal.ts`. Daily readings, feasts, and fast information are fetched for the selected date, using the `ORTHOCAL_BASE_URL` to build requests, and cached to provide an offline history.
 - Local markdown liturgy texts are wrapped by `src/api/liturgy.ts`, which ReaderScreen now consumes to keep markdown loading logic consistent with the network APIs.
 
 ## Navigation & Menu Updates
@@ -37,7 +43,7 @@ Digital Kholagy is a multi-language Orthodox liturgical companion inspired by th
 
 ## Offline Caching
 
-- Bible queries (books, chapters, verses, search results) persist in AsyncStorage for quick repeat access.
+- Bible queries (books, chapters, verses, search results) persist in AsyncStorage for quick repeat access and gracefully fall back to the cached payload when the network is unavailable.
 - Calendar responses cache per date for 12 hours, ensuring daily readings remain available even when offline.
 - Liturgy scroll position bookmarks continue to save automatically; copy/share actions now surface quick toasts.
 
