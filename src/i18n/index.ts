@@ -39,6 +39,28 @@ const resources = {
           calendar: 'Coptic Calendar',
           bible: 'Bible',
           settings: 'Settings'
+        },
+        heroActions: {
+          calendar: 'Open calendar',
+          library: 'Browse library'
+        },
+        quickActionsTitle: 'Quick access',
+        quickActionsSubtitle: 'Jump straight into the texts you need most.',
+        highlightsTitle: 'Daily highlights',
+        highlightsCta: 'Open full calendar',
+        highlightsEmpty: 'Liturgical readings will appear once loaded.',
+        highlightsError: 'Unable to load readings preview.',
+        curatedTitle: 'Curated for you',
+        curatedSubtitle: 'Hand-picked texts ready to explore.',
+        curatedEmpty: 'Library content will appear once available.',
+        viewAll: 'Browse full library',
+        actionDescriptions: {
+          kholagy: 'Divine liturgies and rites',
+          fractions: 'Fraction prayers and litanies',
+          prayers: 'Personal prayers and devotions',
+          calendar: 'Daily Coptic readings',
+          bible: 'Read Scripture by chapter',
+          settings: 'Personalise your experience'
         }
       },
       quickAccess: {
@@ -180,6 +202,28 @@ const resources = {
           calendar: 'التقويم القبطي',
           bible: 'الكتاب المقدس',
           settings: 'الإعدادات'
+        },
+        heroActions: {
+          calendar: 'افتح التقويم',
+          library: 'تصفح المكتبة'
+        },
+        quickActionsTitle: 'وصول سريع',
+        quickActionsSubtitle: 'انتقل مباشرة إلى النصوص التي تحتاجها.',
+        highlightsTitle: 'إضاءات اليوم',
+        highlightsCta: 'عرض التقويم بالكامل',
+        highlightsEmpty: 'ستظهر القراءات الطقسية بعد تحميلها.',
+        highlightsError: 'تعذّر تحميل معاينة القراءات.',
+        curatedTitle: 'مختارات من أجلك',
+        curatedSubtitle: 'نصوص مختارة جاهزة للاستكشاف.',
+        curatedEmpty: 'ستظهر مواد المكتبة عند توفرها.',
+        viewAll: 'تصفح المكتبة بالكامل',
+        actionDescriptions: {
+          kholagy: 'القداسات والأسرار الكنسية',
+          fractions: 'صلوات الكسور والأواشي',
+          prayers: 'صلوات شخصية وتأملات',
+          calendar: 'قراءات اليوم القبطية',
+          bible: 'قراءة الكتاب المقدس بحسب الإصحاح',
+          settings: 'خصّص تجربتك'
         }
       },
       quickAccess: {
@@ -321,6 +365,28 @@ const resources = {
           calendar: 'Коптский календарь',
           bible: 'Библия',
           settings: 'Настройки'
+        },
+        heroActions: {
+          calendar: 'Открыть календарь',
+          library: 'Перейти в библиотеку'
+        },
+        quickActionsTitle: 'Быстрый доступ',
+        quickActionsSubtitle: 'Мгновенно переходите к нужным текстам.',
+        highlightsTitle: 'Главное за сегодня',
+        highlightsCta: 'Открыть календарь полностью',
+        highlightsEmpty: 'Литургические чтения появятся после загрузки.',
+        highlightsError: 'Не удалось загрузить предварительный просмотр чтений.',
+        curatedTitle: 'Подборка для вас',
+        curatedSubtitle: 'Отобранные тексты для изучения.',
+        curatedEmpty: 'Материалы библиотеки появятся, как только станут доступны.',
+        viewAll: 'Перейти ко всей библиотеке',
+        actionDescriptions: {
+          kholagy: 'Божественные литургии и обряды',
+          fractions: 'Молитвы фракций и прошения',
+          prayers: 'Личные молитвы и благочестие',
+          calendar: 'Ежедневные коптские чтения',
+          bible: 'Чтение Священного Писания по главам',
+          settings: 'Настройте приложение под себя'
         }
       },
       quickAccess: {
