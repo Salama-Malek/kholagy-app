@@ -2,8 +2,8 @@
 // Do not edit manually as changes will be overwritten.
 
 export const synaxariumMap: Record<string, () => any> = {
-  'ar-1-1': () => require('../content/synaxarium/ar/1/1.json'),
-  'en-1-1': () => require('../content/synaxarium/en/1/1.json'),
+  'ar-1-1': () => require('../../content/synaxarium/ar/1/1.json'),
+  'en-1-1': () => require('../../content/synaxarium/en/1/1.json'),
 };
 
 export type SynaxariumMapKey = keyof typeof synaxariumMap;

@@ -34,6 +34,7 @@ const resources = {
         dateError: 'Unable to load the Coptic date.',
         cards: {
           kholagy: 'Kholagy',
+          fractions: 'Fractions',
           prayers: 'Prayers',
           calendar: 'Coptic Calendar',
           bible: 'Bible',
@@ -174,6 +175,7 @@ const resources = {
         dateError: 'تعذّر تحميل التاريخ القبطي.',
         cards: {
           kholagy: 'الخولاجي',
+          fractions: 'الأواشي/الكسور',
           prayers: 'الصلوات',
           calendar: 'التقويم القبطي',
           bible: 'الكتاب المقدس',
@@ -314,6 +316,7 @@ const resources = {
         dateError: 'Не удалось загрузить коптскую дату.',
         cards: {
           kholagy: 'Литургии',
+          fractions: 'Фракции',
           prayers: 'Молитвы',
           calendar: 'Коптский календарь',
           bible: 'Библия',

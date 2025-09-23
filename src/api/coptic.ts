@@ -85,18 +85,40 @@ const buildUrl = (path: string) => {
 
 const requestJson = async (path: string): Promise<any> => {
   const url = buildUrl(path);
-  const response = await fetch(url);
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Coptic.io request failed (${response.status}): ${body || response.statusText}`);
-  }
-  if (response.status === 204) {
-    return null;
-  }
+  
+  // Create AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+  
   try {
-    return await response.json();
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Digital-Kholagy/1.0',
+      },
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Coptic.io request failed (${response.status}): ${body || response.statusText}`);
+    }
+    if (response.status === 204) {
+      return null;
+    }
+    try {
+      return await response.json();
+    } catch (error) {
+      throw new Error(`Invalid JSON response from ${url}: ${(error as Error).message}`);
+    }
   } catch (error) {
-    throw new Error(`Invalid JSON response from ${url}: ${(error as Error).message}`);
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timeout for ${url}`);
+    }
+    throw error;
   }
 };
 
@@ -108,6 +130,7 @@ const requestWithFallback = async (paths: string[]): Promise<any> => {
       // eslint-disable-next-line no-await-in-loop
       return await requestJson(candidate);
     } catch (error) {
+      console.warn(`Failed to fetch from ${candidate}:`, error);
       lastError = error instanceof Error ? error : new Error(String(error));
     }
   }
@@ -273,6 +296,60 @@ export const getLocalizedCopticMonthName = (month: number, language: string, fal
   return fallbackName;
 };
 
+// Local Coptic date calculation as fallback
+const calculateCopticDateLocal = (gregorianDate: Date): CopticDateInfo => {
+  // More accurate Coptic date calculation based on actual Coptic calendar rules
+  const year = gregorianDate.getFullYear();
+  const month = gregorianDate.getMonth() + 1;
+  const day = gregorianDate.getDate();
+  
+  // Coptic year: Gregorian year - 283 (more accurate)
+  const copticYear = year - 283;
+  
+  // Coptic New Year (Nayrouz) typically starts around September 11-12 (Gregorian)
+  // This varies slightly each year due to leap year calculations
+  const copticNewYearMonth = 9;
+  const copticNewYearDay = 11;
+  
+  // Calculate day of Coptic year
+  let dayOfCopticYear: number;
+  
+  if (month > copticNewYearMonth || (month === copticNewYearMonth && day >= copticNewYearDay)) {
+    // We're in the current Coptic year
+    const startOfCopticYear = new Date(year, copticNewYearMonth - 1, copticNewYearDay);
+    const currentDate = new Date(year, month - 1, day);
+    dayOfCopticYear = Math.floor((currentDate.getTime() - startOfCopticYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  } else {
+    // We're in the previous Coptic year
+    const startOfCopticYear = new Date(year - 1, copticNewYearMonth - 1, copticNewYearDay);
+    const currentDate = new Date(year, month - 1, day);
+    dayOfCopticYear = Math.floor((currentDate.getTime() - startOfCopticYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  }
+  
+  // Calculate Coptic month and day
+  let copticMonth: number;
+  let copticDay: number;
+  
+  if (dayOfCopticYear <= 360) {
+    // Regular months (1-12): each has 30 days
+    copticMonth = Math.ceil(dayOfCopticYear / 30);
+    copticDay = ((dayOfCopticYear - 1) % 30) + 1;
+  } else {
+    // 13th month (Nasi): has 5 or 6 days depending on leap year
+    copticMonth = 13;
+    copticDay = dayOfCopticYear - 360;
+  }
+  
+  const monthName = resolveMonthName(copticMonth);
+  
+  return {
+    copticYear,
+    copticMonth,
+    copticDay,
+    copticMonthName: monthName,
+  };
+};
+
 const parseCopticDate = (payload: any, iso: string): CopticDateInfo => {
   const segment = extractCopticSegment(payload);
   const year = Number(segment?.year ?? segment?.copticYear);
@@ -326,15 +403,29 @@ const parseDailyReadings = (payload: any): DailyReadings => {
 
 export const getCopticDate = async (gregorianDate: Date): Promise<CopticDateInfo> => {
   const iso = toIsoDate(gregorianDate);
+  console.info(`Fetching Coptic date for ${iso} from coptic.io API`);
+  
   return fetchWithCache(`coptic:date:${iso}`, async () => {
-    const payload = await requestWithFallback([
-      `api/v1/calendar/gregorian/${iso}`,
-      `api/calendar/gregorian/${iso}`,
-      `calendar/gregorian/${iso}`,
-      `api/v1/calendar/day?date=${iso}`,
-      `calendar/day?date=${iso}`,
-    ]);
-    return parseCopticDate(payload, iso);
+    try {
+      const payload = await requestWithFallback([
+        `api/v1/calendar/gregorian/${iso}`,
+        `api/calendar/gregorian/${iso}`,
+        `calendar/gregorian/${iso}`,
+        `api/v1/calendar/day?date=${iso}`,
+        `calendar/day?date=${iso}`,
+        `api/v1/date/${iso}`,
+        `api/date/${iso}`,
+        `date/${iso}`,
+      ]);
+      console.info('Successfully fetched from coptic.io API:', payload);
+      return parseCopticDate(payload, iso);
+    } catch (error) {
+      console.warn('coptic.io API failed, using local Coptic date calculation:', error);
+      // Fallback to local calculation when API is unavailable
+      const localDate = calculateCopticDateLocal(gregorianDate);
+      console.info('Using local Coptic date calculation:', localDate);
+      return localDate;
+    }
   }, CACHE_TTL_MS);
 };
 

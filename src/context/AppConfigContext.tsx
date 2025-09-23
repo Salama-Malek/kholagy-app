@@ -58,25 +58,43 @@ const resolveConfigForVariant = (variant: AppVariantKey): AppConfig => {
   }
   const cloned = cloneConfig();
   const { navigation, home, features } = appConfig.kholagyFocusVariant;
-  if (navigation?.tabs) {
-    const tabs = cloned.navigation.tabs as unknown as AnyRecord[];
-    tabs.length = 0;
-    navigation.tabs.forEach((tab) => {
-      tabs.push(JSON.parse(JSON.stringify(tab)));
-    });
-  }
-  if (home?.sections) {
-    const sections = cloned.home.sections as unknown as AnyRecord[];
-    sections.length = 0;
-    if (Array.isArray(home.sections)) {
-      home.sections.forEach((section) => {
-        sections.push(typeof section === 'object' ? JSON.parse(JSON.stringify(section)) : section);
-      });
+
+  if (Array.isArray(navigation?.tabs)) {
+    let targetTabs: AnyRecord[];
+    if (Array.isArray(cloned.navigation?.tabs)) {
+      targetTabs = cloned.navigation.tabs as unknown as AnyRecord[];
+      targetTabs.length = 0;
+    } else {
+      targetTabs = [];
     }
+    navigation.tabs.forEach((tab) => {
+      targetTabs.push(JSON.parse(JSON.stringify(tab)) as AnyRecord);
+    });
+    (cloned.navigation as AnyRecord).tabs = targetTabs as unknown as typeof cloned.navigation.tabs;
   }
-  if (features) {
+
+  if (Array.isArray(home?.sections)) {
+    let targetSections: AnyRecord[];
+    if (Array.isArray(cloned.home?.sections)) {
+      targetSections = cloned.home.sections as unknown as AnyRecord[];
+      targetSections.length = 0;
+    } else {
+      targetSections = [];
+    }
+    home.sections.forEach((section) => {
+      targetSections.push(
+        typeof section === 'object' && section !== null
+          ? (JSON.parse(JSON.stringify(section)) as AnyRecord)
+          : section,
+      );
+    });
+    (cloned.home as AnyRecord).sections = targetSections as unknown as typeof cloned.home.sections;
+  }
+
+  if (features && typeof features === 'object') {
     mergeInto(cloned.features as AnyRecord, features as AnyRecord);
   }
+
   return cloned as AppConfig;
 };
 

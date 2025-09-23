@@ -117,10 +117,10 @@ const SERVICES: Array<{
   icon: string;
   translation: string;
 }> = [
-  { key: 'matins', icon: 'weather-sunset-up', translation: 'calendar.services.matins' },
-  { key: 'vespers', icon: 'weather-sunset-down', translation: 'calendar.services.vespers' },
-  { key: 'liturgy', icon: 'church', translation: 'calendar.services.liturgy' },
-];
+    { key: 'matins', icon: 'weather-sunset-up', translation: 'calendar.services.matins' },
+    { key: 'vespers', icon: 'weather-sunset-down', translation: 'calendar.services.vespers' },
+    { key: 'liturgy', icon: 'church', translation: 'calendar.services.liturgy' },
+  ];
 
 const toISO = (date: Date) => {
   const year = date.getFullYear();
@@ -172,13 +172,23 @@ const CalendarScreen: React.FC = () => {
         day: copticInfo.copticDay,
         name: copticInfo.copticMonthName,
       });
-      const [dailyReadings, synaxariumEntries] = await Promise.all([
-        getDailyReadings(copticInfo.copticYear, copticInfo.copticMonth, copticInfo.copticDay),
-        getSynaxarium(copticInfo.copticMonth, copticInfo.copticDay, uiLang),
-      ]);
-      setReadings(dailyReadings);
-      setSynaxarium(synaxariumEntries);
+
+      // Try to fetch readings and synaxarium, but don't fail the whole operation if they fail
+      try {
+        const [dailyReadings, synaxariumEntries] = await Promise.all([
+          getDailyReadings(copticInfo.copticYear, copticInfo.copticMonth, copticInfo.copticDay),
+          getSynaxarium(copticInfo.copticMonth, copticInfo.copticDay, uiLang),
+        ]);
+        setReadings(dailyReadings);
+        setSynaxarium(synaxariumEntries);
+      } catch (readingsError) {
+        console.warn('Failed to load readings/synaxarium:', readingsError);
+        setReadings(null);
+        setSynaxarium([]);
+        // Don't set the main error for readings failure
+      }
     } catch (err) {
+      console.error('Failed to load Coptic date:', err);
       setError(err instanceof Error ? err.message : String(err));
       setReadings(null);
       setSynaxarium([]);
