@@ -1,11 +1,12 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAppConfig } from '../src/context/AppConfigContext';
 import ListScreen from '../screens/ListScreen';
 import MenuScreen from '../src/screens/MenuScreen';
 import { TabKey, TabParamList } from './types';
+import { appConfig } from '../src/config/appConfig';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -23,15 +24,31 @@ const screenRegistry: Record<TabKey, { component: React.ComponentType<any>; init
 };
 
 const Tabs = () => {
-  const { theme, resolvedTheme, isRTL, uiLang } = useLanguage();
+  const { resolvedTheme, isRTL, uiLang } = useLanguage();
   const { config } = useAppConfig();
 
-  const palette = config.theme[resolvedTheme];
+  const palette = useMemo(() => config.theme[resolvedTheme] ?? config.theme.light, [config.theme, resolvedTheme]);
 
-  const tabs = config.navigation.tabs;
+  const resolvedTabs = useMemo(() => {
+    const configured = Array.isArray(config.navigation?.tabs) ? config.navigation.tabs : [];
+    const pickSource = configured.length > 0 ? configured : appConfig.navigation.tabs;
+    const filtered = pickSource.filter(
+      (tab): tab is typeof pickSource[number] & { key: TabKey; title: Record<string, string>; icon: string } =>
+        Boolean(tab && typeof tab.key === 'string' && (tab.key as TabKey) in screenRegistry),
+    );
+    if (filtered.length > 0) {
+      return filtered;
+    }
+    return appConfig.navigation.tabs.filter(
+      (tab): tab is typeof appConfig.navigation.tabs[number] & { key: TabKey; title: Record<string, string>; icon: string } =>
+        Boolean(tab && typeof tab.key === 'string' && (tab.key as TabKey) in screenRegistry),
+    );
+  }, [config.navigation?.tabs]);
 
   return (
     <Tab.Navigator
+      initialRouteName="kholagy"
+      sceneContainerStyle={{ backgroundColor: palette.background }}
       screenOptions={{
         headerTitleAlign: 'center',
         tabBarActiveTintColor: palette.tabActive,
@@ -45,6 +62,7 @@ const Tabs = () => {
           paddingBottom: 8,
           direction: isRTL ? 'rtl' : 'ltr',
         },
+        tabBarHideOnKeyboard: true,
         headerStyle: {
           backgroundColor: palette.surface,
           elevation: config.navigation.headers.style === 'elevated' ? 2 : 0,
@@ -61,7 +79,7 @@ const Tabs = () => {
         },
       }}
     >
-      {tabs.map((tab) => {
+      {resolvedTabs.map((tab) => {
         const definition = screenRegistry[tab.key as TabKey];
         if (!definition) {
           return null;

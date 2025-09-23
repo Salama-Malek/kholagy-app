@@ -1,150 +1,299 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import CrossIcon from '../../assets/icons/cross.svg';
-import { getCopticDate, getLocalizedCopticMonthName, type CopticDateInfo } from '../api/coptic';
+import catalog from '../../content/catalog.json';
+import {
+  getCopticDate,
+  getDailyReadings,
+  getLocalizedCopticMonthName,
+  type CopticDateInfo,
+  type DailyReadings,
+  type ReadingService,
+} from '../api/coptic';
 import { useAppConfig } from '../context/AppConfigContext';
 import { useLanguage } from '../context/LanguageContext';
-import type { RootStackParamList, TabParamList } from '../../navigation/types';
+import type { Category, RootStackParamList, TabParamList } from '../../navigation/types';
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingBottom: 36,
+    paddingBottom: 48,
+    gap: 24,
   },
-  header: {
+  heroCard: {
+    borderRadius: 28,
+    padding: 26,
+    overflow: 'hidden',
+  },
+  heroRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 32,
   },
-  crossWrapper: {
-    width: 136,
-    height: 136,
-    borderRadius: 68,
+  heroIconWrapper: {
+    width: 132,
+    height: 132,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
-    shadowColor: '#000000',
-    shadowOpacity: 0.16,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
   },
   heroTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
-    textAlign: 'center',
+    marginTop: 20,
   },
   heroSubtitle: {
-    marginTop: 8,
+    marginTop: 12,
     fontSize: 15,
-    textAlign: 'center',
+    lineHeight: 22,
+  },
+  heroActionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 22,
+  },
+  heroAction: {
+    flexGrow: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
   },
   dateCard: {
     borderRadius: 24,
-    padding: 20,
+    padding: 22,
     borderWidth: 1,
-    marginBottom: 28,
+    gap: 12,
   },
-  dateLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1.2,
+  dateHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  gregorianText: {
-    marginTop: 10,
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
   },
-  copticLabel: {
-    marginTop: 16,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1.2,
+  sectionSubtitle: {
+    marginTop: 4,
+    fontSize: 13,
   },
-  copticText: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  errorText: {
-    marginTop: 8,
-    fontSize: 14,
-  },
-  cardGrid: {
+  quickGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    rowGap: 18,
   },
-  card: {
+  quickCard: {
     width: '48%',
     borderRadius: 20,
     padding: 18,
     borderWidth: 1,
-    marginBottom: 18,
-    shadowColor: '#000000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    gap: 10,
   },
-  cardIcon: {
-    width: 48,
-    height: 48,
+  quickIconWrapper: {
+    width: 46,
+    height: 46,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
   },
-  cardLabel: {
+  quickTitle: {
     fontSize: 16,
     fontWeight: '600',
   },
-  cardChevron: {
-    position: 'absolute',
-    bottom: 16,
-    right: 18,
+  quickSubtitle: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  highlightCard: {
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    gap: 16,
+  },
+  highlightRow: {
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  highlightInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  highlightTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  highlightMeta: {
+    fontSize: 12,
+  },
+  featureList: {
+    gap: 14,
+  },
+  featureCard: {
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    gap: 10,
+  },
+  featureTag: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderWidth: 1,
+  },
+  featureTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  featureMeta: {
+    fontSize: 12,
+  },
+  sectionAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
 });
 
 type HomeNavigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
-type NavigationCard = {
+type QuickAction = {
   key: 'kholagy' | 'fractions' | 'prayers' | 'calendar' | 'bible' | 'settings';
   icon: string;
+  descriptionKey: string;
   action:
-  | { type: 'tab'; screen: keyof TabParamList; params?: TabParamList[keyof TabParamList] }
-  | { type: 'stack'; screen: Exclude<keyof RootStackParamList, 'Home'> };
+    | { type: 'tab'; screen: keyof TabParamList; params?: TabParamList[keyof TabParamList] }
+    | { type: 'stack'; screen: 'Calendar' | 'Bible' | 'Settings' };
 };
 
-const CARD_DEFINITIONS: NavigationCard[] = [
-  { key: 'kholagy', icon: 'church', action: { type: 'tab', screen: 'kholagy', params: { category: 'kholagy' } } },
-  { key: 'fractions', icon: 'bread-slice', action: { type: 'tab', screen: 'fractions', params: { category: 'fractions' } } },
-  { key: 'prayers', icon: 'hands-pray', action: { type: 'tab', screen: 'prayers', params: { category: 'prayers' } } },
-  { key: 'calendar', icon: 'calendar-month', action: { type: 'stack', screen: 'Calendar' } },
-  { key: 'bible', icon: 'book-cross', action: { type: 'stack', screen: 'Bible' } },
-  { key: 'settings', icon: 'cog-outline', action: { type: 'tab', screen: 'settings' } },
+type CatalogItem = {
+  id: string;
+  titles: Record<string, string>;
+  category: string;
+  languages: string[];
+  season?: string;
+  tags?: string[];
+};
+
+type Highlight = {
+  service: ReadingService;
+  title: string;
+  reference?: string;
+  source?: string;
+};
+
+const QUICK_ACTIONS: QuickAction[] = [
+  {
+    key: 'kholagy',
+    icon: 'church',
+    descriptionKey: 'home.actionDescriptions.kholagy',
+    action: { type: 'tab', screen: 'kholagy', params: { category: 'kholagy' } },
+  },
+  {
+    key: 'fractions',
+    icon: 'bread-slice',
+    descriptionKey: 'home.actionDescriptions.fractions',
+    action: { type: 'tab', screen: 'fractions', params: { category: 'fractions' } },
+  },
+  {
+    key: 'prayers',
+    icon: 'hands-pray',
+    descriptionKey: 'home.actionDescriptions.prayers',
+    action: { type: 'tab', screen: 'prayers', params: { category: 'prayers' } },
+  },
+  {
+    key: 'calendar',
+    icon: 'calendar-month',
+    descriptionKey: 'home.actionDescriptions.calendar',
+    action: { type: 'stack', screen: 'Calendar' },
+  },
+  {
+    key: 'bible',
+    icon: 'book-cross',
+    descriptionKey: 'home.actionDescriptions.bible',
+    action: { type: 'stack', screen: 'Bible' },
+  },
+  {
+    key: 'settings',
+    icon: 'cog-outline',
+    descriptionKey: 'home.actionDescriptions.settings',
+    action: { type: 'stack', screen: 'Settings' },
+  },
 ];
+
+const HIGHLIGHT_SERVICES: ReadingService[] = ['matins', 'vespers', 'liturgy'];
+
+const HIGHLIGHT_ICONS: Record<ReadingService, string> = {
+  matins: 'weather-sunset-up',
+  vespers: 'weather-sunset-down',
+  liturgy: 'church',
+};
+
+const withAlpha = (color: string, alpha: string) => {
+  if (typeof color !== 'string') {
+    return color;
+  }
+  if (color.startsWith('#') && (color.length === 7 || color.length === 9)) {
+    const base = color.slice(0, 7);
+    return `${base}${alpha}`;
+  }
+  return color;
+};
+
+const normalizeCategory = (input: string): Category => {
+  if (input === 'liturgies') {
+    return 'kholagy';
+  }
+  return input as Category;
+};
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeNavigation>();
   const { t } = useTranslation();
-  const { config } = useAppConfig() || {};
-  const { resolvedTheme, uiLang, isRTL } = useLanguage() || {};
+  const { config } = useAppConfig();
+  const { resolvedTheme, uiLang, isRTL } = useLanguage();
 
-  const palette = config?.theme?.[resolvedTheme] || config?.theme?.light || {};
-  const today = useMemo(() => new Date(), []);
+  const palette = useMemo(() => config.theme[resolvedTheme] ?? config.theme.light, [config.theme, resolvedTheme]);
+
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [copticDate, setCopticDate] = useState<CopticDateInfo | null>(null);
-  const [loadingDate, setLoadingDate] = useState<boolean>(true);
+  const [loadingDate, setLoadingDate] = useState<boolean>(false);
   const [dateError, setDateError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState<number>(0);
+  const [dailyReadings, setDailyReadings] = useState<DailyReadings | null>(null);
+  const [highlightsLoading, setHighlightsLoading] = useState<boolean>(false);
+  const [highlightsError, setHighlightsError] = useState<string | null>(null);
 
   const gregorianLabel = useMemo(() => {
     try {
@@ -153,20 +302,19 @@ const HomeScreen: React.FC = () => {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
-      }).format(today);
+      }).format(currentDate);
     } catch (error) {
-      return today.toDateString();
+      return currentDate.toDateString();
     }
-  }, [today, uiLang]);
+  }, [currentDate, uiLang]);
 
-  const loadCopticDate = useCallback(async () => {
+  const loadCopticDate = useCallback(async (targetDate: Date) => {
     setLoadingDate(true);
     setDateError(null);
     try {
-      const info = await getCopticDate(today);
+      const info = await getCopticDate(targetDate);
       setCopticDate(info);
-      setDateError(null); // Clear any previous errors
-      setRetryCount(0); // Reset retry count on success
+      setRetryCount(0);
     } catch (error) {
       console.error('Failed to load Coptic date:', error);
       setCopticDate(null);
@@ -174,91 +322,54 @@ const HomeScreen: React.FC = () => {
     } finally {
       setLoadingDate(false);
     }
-  }, [today]);
+  }, []);
+
+  const loadDailyHighlights = useCallback(async (info: CopticDateInfo) => {
+    setHighlightsLoading(true);
+    setHighlightsError(null);
+    try {
+      const readings = await getDailyReadings(info.copticYear, info.copticMonth, info.copticDay);
+      setDailyReadings(readings);
+    } catch (error) {
+      console.warn('Failed to load daily readings preview:', error);
+      setDailyReadings(null);
+      setHighlightsError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setHighlightsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let mounted = true;
+    void loadCopticDate(currentDate);
+  }, [currentDate, loadCopticDate]);
 
-    const load = async () => {
-      if (!mounted) return;
-      await loadCopticDate();
-    };
-
-    void load();
-
-    return () => {
-      mounted = false;
-    };
-  }, [loadCopticDate]);
-
-  const handleRetry = useCallback(() => {
-    if (retryCount < 3) {
-      setRetryCount(prev => prev + 1);
-      void loadCopticDate();
+  useEffect(() => {
+    if (!copticDate) {
+      setDailyReadings(null);
+      return;
     }
-  }, [retryCount, loadCopticDate]);
+    void loadDailyHighlights(copticDate);
+  }, [copticDate, loadDailyHighlights]);
 
-  const cards = useMemo(
-    () => {
-      try {
-        if (!CARD_DEFINITIONS || !Array.isArray(CARD_DEFINITIONS)) {
-          console.warn('CARD_DEFINITIONS is not available');
-          return [];
-        }
-
-        if (!t || typeof t !== 'function') {
-          console.warn('Translation function is not available');
-          return CARD_DEFINITIONS.map((definition) => ({
-            ...definition,
-            label: definition.key,
-          }));
-        }
-
-        const mappedCards = CARD_DEFINITIONS.map((definition) => ({
-          ...definition,
-          label: t(`home.cards.${definition.key}` as const) || definition.key,
-        }));
-
-        // Ensure we return a valid array
-        return Array.isArray(mappedCards) ? mappedCards : [];
-      } catch (error) {
-        console.error('Error creating cards:', error);
-        return [];
-      }
-    },
-    [t],
+  useFocusEffect(
+    useCallback(() => {
+      setCurrentDate(new Date());
+    }, []),
   );
 
-  const handleNavigate = useCallback((card: NavigationCard) => {
-    try {
-      if (!card || !card.action) {
-        console.warn('Invalid card or action:', card);
-        return;
-      }
-
-      if (card.action.type === 'tab') {
-        if (!card.action.screen) {
-          console.warn('Tab action missing screen:', card);
-          return;
-        }
-
-        navigation.navigate('MainTabs', {
-          screen: card.action.screen,
-          params: card.action.params as any,
-        });
-        return;
-      }
-
-      if (card.action.type === 'stack' && card.action.screen) {
-        navigation.navigate(card.action.screen as any);
-        return;
-      }
-
-      console.warn('Unknown action type:', card.action);
-    } catch (error) {
-      console.error('Navigation error:', error);
+  const handleRetryDate = useCallback(() => {
+    if (retryCount >= 3) {
+      return;
     }
-  }, [navigation]);
+    setRetryCount((prev) => prev + 1);
+    void loadCopticDate(currentDate);
+  }, [currentDate, loadCopticDate, retryCount]);
+
+  const handleRetryHighlights = useCallback(() => {
+    if (copticDate) {
+      void loadDailyHighlights(copticDate);
+    }
+  }, [copticDate, loadDailyHighlights]);
 
   const localizedMonthName = useMemo(() => {
     if (!copticDate) {
@@ -275,185 +386,694 @@ const HomeScreen: React.FC = () => {
     return `${copticDate.copticDay} ${localizedMonthName} ${copticDate.copticYear} ${suffix}`.trim();
   }, [copticDate, localizedMonthName, t]);
 
+  const quickActions = useMemo(
+    () =>
+      QUICK_ACTIONS.map((definition) => ({
+        ...definition,
+        label: t(`home.cards.${definition.key}` as const) || definition.key,
+        description: t(definition.descriptionKey as any),
+      })),
+    [t],
+  );
+
+  const accentColors = useMemo(
+    () => ({
+      kholagy: palette.primary,
+      fractions: palette.accent,
+      prayers: '#A08CFF',
+      calendar: palette.accent,
+      bible: '#6FD1A4',
+      settings: palette.textSecondary,
+    }),
+    [palette.accent, palette.primary, palette.textSecondary],
+  );
+
+  const curatedPicks = useMemo(() => {
+    if (!Array.isArray(catalog)) {
+      return [] as Array<{ id: string; title: string; category: Category; languages: string[] }>;
+    }
+
+    const typedCatalog = catalog as CatalogItem[];
+    const seen = new Set<string>();
+    const preferredCategories: Category[] = ['kholagy', 'fractions', 'prayers', 'agpeya', 'synaxarium', 'psalmody'];
+
+    const picks: Array<{ id: string; title: string; category: Category; languages: string[] }> = [];
+
+    preferredCategories.forEach((category) => {
+      const match = typedCatalog.find((item) => normalizeCategory(item.category) === category);
+      if (match && !seen.has(match.id)) {
+        seen.add(match.id);
+        picks.push({
+          id: match.id,
+          title: match.titles[uiLang] ?? match.titles.en ?? match.id,
+          category,
+          languages: Array.isArray(match.languages) ? match.languages : [],
+        });
+      }
+    });
+
+    if (picks.length < 4) {
+      typedCatalog.some((item) => {
+        if (seen.has(item.id)) {
+          return false;
+        }
+        const normalisedCategory = normalizeCategory(item.category);
+        picks.push({
+          id: item.id,
+          title: item.titles[uiLang] ?? item.titles.en ?? item.id,
+          category: normalisedCategory,
+          languages: Array.isArray(item.languages) ? item.languages : [],
+        });
+        seen.add(item.id);
+        return picks.length >= 6;
+      });
+    }
+
+    return picks;
+  }, [uiLang]);
+
+  const highlights: Highlight[] = useMemo(() => {
+    if (!dailyReadings) {
+      return [];
+    }
+    const summary: Highlight[] = [];
+    HIGHLIGHT_SERVICES.forEach((service) => {
+      const first = dailyReadings[service]?.find((entry) => entry && (entry.title || entry.reference || entry.text));
+      if (first) {
+        summary.push({
+          service,
+          title: first.title || first.text || first.reference || '',
+          reference: first.reference,
+          source: first.source,
+        });
+      }
+    });
+    return summary;
+  }, [dailyReadings]);
+
+  const handleQuickActionPress = useCallback(
+    (action: QuickAction['action']) => {
+      try {
+        if (action.type === 'tab') {
+          navigation.navigate('MainTabs', {
+            screen: action.screen,
+            params: action.params as any,
+          });
+          return;
+        }
+        navigation.navigate(action.screen);
+      } catch (error) {
+        console.error('Navigation error from home action:', error);
+      }
+    },
+    [navigation],
+  );
+
+  const handleOpenReader = useCallback(
+    (item: { id: string; title: string }) => {
+      navigation.navigate('Reader', {
+        itemId: item.id,
+        title: item.title,
+      });
+    },
+    [navigation],
+  );
+
+  const languagesLabel = useCallback((languages: string[]) => {
+    if (!Array.isArray(languages) || languages.length === 0) {
+      return '';
+    }
+    const preview = languages.slice(0, 3).map((lang) => lang.toUpperCase());
+    return preview.join(' · ');
+  }, []);
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: palette.background }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <View
+        <View
+          style={[
+            styles.heroCard,
+            {
+              backgroundColor: withAlpha(palette.surface, 'EE'),
+              borderWidth: 1,
+              borderColor: withAlpha(palette.divider, '88'),
+            },
+          ]}
+        >
+          <View style={[styles.heroRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View
+              style={[
+                styles.heroIconWrapper,
+                {
+                  backgroundColor: withAlpha(palette.primary, '1A'),
+                  borderWidth: 1,
+                  borderColor: withAlpha(palette.primary, '44'),
+                },
+              ]}
+            >
+              <CrossIcon width={96} height={96} color={palette.primary} />
+            </View>
+            <MaterialCommunityIcons
+              name="hands-pray"
+              size={46}
+              color={palette.accent}
+              style={{ opacity: 0.18 }}
+            />
+          </View>
+          <Text
             style={[
-              styles.crossWrapper,
-              { backgroundColor: palette.surface, borderWidth: 1, borderColor: palette.divider },
+              styles.heroTitle,
+              { color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' },
             ]}
           >
-            <CrossIcon width={96} height={96} color={palette.accent} />
-          </View>
-          <Text style={[styles.heroTitle, { color: palette.textPrimary }]}>{t('home.welcomeTitle')}</Text>
+            {t('home.welcomeTitle')}
+          </Text>
           <Text
             style={[
               styles.heroSubtitle,
-              { color: palette.textSecondary, writingDirection: isRTL ? 'rtl' : 'ltr' },
+              { color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left' },
             ]}
           >
-            {t('home.welcomeSubtitle')}
+            {t('home.quickActionsSubtitle')}
           </Text>
+          <View
+            style={[
+              styles.heroActionsRow,
+              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            ]}
+          >
+            <Pressable
+              style={({ pressed }) => [
+                styles.heroAction,
+                {
+                  borderColor: pressed ? palette.primary : withAlpha(palette.primary, '55'),
+                  backgroundColor: withAlpha(palette.primary, '1A'),
+                  flexDirection: isRTL ? 'row-reverse' : 'row',
+                },
+              ]}
+              onPress={() => navigation.navigate('Calendar')}
+            >
+              <MaterialCommunityIcons name="calendar-month" size={20} color={palette.primary} />
+              <Text style={{ color: palette.primary, fontWeight: '600' }}>{t('home.heroActions.calendar')}</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.heroAction,
+                {
+                  borderColor: pressed ? palette.accent : withAlpha(palette.accent, '66'),
+                  backgroundColor: withAlpha(palette.accent, '1A'),
+                  flexDirection: isRTL ? 'row-reverse' : 'row',
+                },
+              ]}
+              onPress={() =>
+                navigation.navigate('MainTabs', {
+                  screen: 'kholagy',
+                  params: { category: 'kholagy' },
+                })
+              }
+            >
+              <MaterialCommunityIcons name="book-open-variant" size={20} color={palette.accent} />
+              <Text style={{ color: palette.accent, fontWeight: '600' }}>{t('home.heroActions.library')}</Text>
+            </Pressable>
+          </View>
         </View>
 
         <View
           style={[
             styles.dateCard,
-            { borderColor: palette.divider, backgroundColor: palette.surface },
+            { backgroundColor: palette.surface, borderColor: palette.divider },
           ]}
         >
-          <Text
+          <View
             style={[
-              styles.dateLabel,
-              { color: palette.primary, textAlign: isRTL ? 'right' : 'left' },
+              styles.dateHeader,
+              { flexDirection: isRTL ? 'row-reverse' : 'row' },
             ]}
           >
-            {t('home.todaysDateLabel')}
-          </Text>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  color: palette.textSecondary,
+                  fontSize: 12,
+                  fontWeight: '700',
+                  letterSpacing: 1.2,
+                  textAlign: isRTL ? 'right' : 'left',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {t('home.todaysDateLabel')}
+              </Text>
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontSize: 20,
+                  fontWeight: '700',
+                  color: palette.textPrimary,
+                  textAlign: isRTL ? 'right' : 'left',
+                }}
+              >
+                {gregorianLabel}
+              </Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => navigation.navigate('Calendar')}
+              style={({ pressed }) => ({
+                borderRadius: 14,
+                paddingVertical: 8,
+                paddingHorizontal: 14,
+                borderWidth: 1,
+                borderColor: pressed ? palette.primary : withAlpha(palette.primary, '66'),
+                backgroundColor: withAlpha(palette.primary, '14'),
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                alignItems: 'center',
+                gap: 6,
+              })}
+            >
+              <MaterialCommunityIcons name="calendar-search" size={18} color={palette.primary} />
+              <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '600' }}>{t('home.highlightsCta')}</Text>
+            </Pressable>
+          </View>
+
           <Text
-            style={[
-              styles.gregorianText,
-              { color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' },
-            ]}
-          >
-            {gregorianLabel}
-          </Text>
-          <Text
-            style={[
-              styles.copticLabel,
-              { color: palette.accent, textAlign: isRTL ? 'right' : 'left' },
-            ]}
+            style={{
+              marginTop: 10,
+              fontSize: 12,
+              fontWeight: '700',
+              letterSpacing: 1.2,
+              color: palette.accent,
+              textAlign: isRTL ? 'right' : 'left',
+              textTransform: 'uppercase',
+            }}
           >
             {t('home.copticDateLabel')}
           </Text>
           {loadingDate ? (
-            <View style={{ marginTop: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-              <ActivityIndicator color={palette.primary} size="small" />
+            <View style={{ marginTop: 12, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+              <ActivityIndicator size="small" color={palette.primary} />
             </View>
           ) : dateError ? (
-            <View style={{ marginTop: 8 }}>
+            <View style={{ marginTop: 8, gap: 8 }}>
               <Text
-                style={[
-                  styles.errorText,
-                  { color: palette.textSecondary, textAlign: isRTL ? 'right' : 'left' },
-                ]}
+                style={{
+                  fontSize: 14,
+                  color: palette.textSecondary,
+                  textAlign: isRTL ? 'right' : 'left',
+                }}
               >
                 {t('home.dateError')}
               </Text>
-              {retryCount < 3 && (
+              {retryCount < 3 ? (
                 <Pressable
-                  onPress={handleRetry}
-                  style={({ pressed }) => [
-                    {
-                      marginTop: 8,
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 8,
-                      backgroundColor: pressed ? palette.primary + '20' : palette.primary + '10',
-                      borderWidth: 1,
-                      borderColor: palette.primary,
-                      alignSelf: isRTL ? 'flex-end' : 'flex-start',
-                    },
-                  ]}
+                  onPress={handleRetryDate}
+                  style={({ pressed }) => ({
+                    alignSelf: isRTL ? 'flex-end' : 'flex-start',
+                    paddingVertical: 6,
+                    paddingHorizontal: 12,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: pressed ? palette.primary : withAlpha(palette.primary, '66'),
+                    backgroundColor: withAlpha(palette.primary, '1A'),
+                  })}
                 >
-                  <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '600' }}>
-                    {t('common.retry')}
-                  </Text>
+                  <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '600' }}>{t('common.retry')}</Text>
                 </Pressable>
-              )}
+              ) : null}
             </View>
           ) : (
             <Text
-              style={[
-                styles.copticText,
-                { color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' },
-              ]}
+              style={{
+                marginTop: 8,
+                fontSize: 18,
+                fontWeight: '600',
+                color: palette.textPrimary,
+                textAlign: isRTL ? 'right' : 'left',
+              }}
             >
               {copticLabel}
             </Text>
           )}
         </View>
 
-        <View style={styles.cardGrid}>
-          {(() => {
-            try {
-              if (!cards || !Array.isArray(cards) || cards.length === 0) {
-                return (
-                  <Text style={{ color: palette.textSecondary, textAlign: 'center', padding: 20 }}>
-                    Loading navigation cards...
+        <View style={{ gap: 12 }}>
+          <View
+            style={[
+              styles.sectionHeader,
+              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            ]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  ...styles.sectionTitle,
+                  color: palette.textPrimary,
+                  textAlign: isRTL ? 'right' : 'left',
+                }}
+              >
+                {t('home.quickActionsTitle')}
+              </Text>
+              <Text
+                style={{
+                  ...styles.sectionSubtitle,
+                  color: palette.textSecondary,
+                  textAlign: isRTL ? 'right' : 'left',
+                }}
+              >
+                {t('home.quickActionsSubtitle')}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.quickGrid}>
+            {quickActions.map((item) => {
+              const accent = accentColors[item.key] ?? palette.primary;
+              return (
+                <Pressable
+                  key={item.key}
+                  onPress={() => handleQuickActionPress(item.action)}
+                  style={({ pressed }) => [
+                    styles.quickCard,
+                    {
+                      borderColor: pressed ? accent : withAlpha(accent, '55'),
+                      backgroundColor: withAlpha(accent, resolvedTheme === 'dark' ? '22' : '18'),
+                      flexDirection: isRTL ? 'row-reverse' : 'column',
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.quickIconWrapper,
+                      {
+                        backgroundColor: withAlpha(accent, resolvedTheme === 'dark' ? '33' : '28'),
+                        borderColor: withAlpha(accent, '55'),
+                        borderWidth: 1,
+                      },
+                    ]}
+                  >
+                    <MaterialCommunityIcons name={item.icon as any} size={24} color={accent} />
+                  </View>
+                  <Text
+                    style={{
+                      ...styles.quickTitle,
+                      color: palette.textPrimary,
+                      textAlign: isRTL ? 'right' : 'left',
+                    }}
+                  >
+                    {item.label}
                   </Text>
-                );
+                  <Text
+                    style={{
+                      ...styles.quickSubtitle,
+                      color: palette.textSecondary,
+                      textAlign: isRTL ? 'right' : 'left',
+                    }}
+                    numberOfLines={2}
+                  >
+                    {item.description}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={{ gap: 12 }}>
+          <View
+            style={[
+              styles.sectionHeader,
+              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            ]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  ...styles.sectionTitle,
+                  color: palette.textPrimary,
+                  textAlign: isRTL ? 'right' : 'left',
+                }}
+              >
+                {t('home.highlightsTitle')}
+              </Text>
+              <Text
+                style={{
+                  ...styles.sectionSubtitle,
+                  color: palette.textSecondary,
+                  textAlign: isRTL ? 'right' : 'left',
+                }}
+              >
+                {copticLabel}
+              </Text>
+            </View>
+          </View>
+
+          <View
+            style={[
+              styles.highlightCard,
+              { backgroundColor: palette.surface, borderColor: palette.divider },
+            ]}
+          >
+            {highlightsLoading ? (
+              <View style={{ alignItems: 'center' }}>
+                <ActivityIndicator size="small" color={palette.primary} />
+              </View>
+            ) : highlightsError ? (
+              <View style={{ gap: 8 }}>
+                <Text
+                  style={{
+                    color: palette.textSecondary,
+                    textAlign: isRTL ? 'right' : 'left',
+                    fontSize: 14,
+                  }}
+                >
+                  {t('home.highlightsError')}
+                </Text>
+                <Pressable
+                  onPress={handleRetryHighlights}
+                  style={({ pressed }) => ({
+                    alignSelf: isRTL ? 'flex-end' : 'flex-start',
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: pressed ? palette.primary : withAlpha(palette.primary, '66'),
+                    backgroundColor: withAlpha(palette.primary, '1A'),
+                  })}
+                >
+                  <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '600' }}>{t('common.retry')}</Text>
+                </Pressable>
+              </View>
+            ) : highlights.length === 0 ? (
+              <Text
+                style={{
+                  color: palette.textSecondary,
+                  fontSize: 14,
+                  textAlign: isRTL ? 'right' : 'left',
+                }}
+              >
+                {t('home.highlightsEmpty')}
+              </Text>
+            ) : (
+              highlights.map((highlight) => (
+                <Pressable
+                  key={highlight.service}
+                  onPress={() => navigation.navigate('Calendar')}
+                  style={({ pressed }) => [
+                    styles.highlightRow,
+                    {
+                      borderColor: pressed ? palette.primary : palette.divider,
+                      backgroundColor: withAlpha(palette.background, 'EE'),
+                      flexDirection: isRTL ? 'row-reverse' : 'row',
+                    },
+                  ]}
+                >
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 14,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: withAlpha(palette.primary, '18'),
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name={HIGHLIGHT_ICONS[highlight.service] as any}
+                      size={22}
+                      color={palette.primary}
+                    />
+                  </View>
+                  <View style={styles.highlightInfo}>
+                    <Text
+                      style={{
+                        ...styles.highlightTitle,
+                        color: palette.textPrimary,
+                        textAlign: isRTL ? 'right' : 'left',
+                      }}
+                      numberOfLines={2}
+                    >
+                      {highlight.title}
+                    </Text>
+                    {highlight.reference ? (
+                      <Text
+                        style={{
+                          ...styles.highlightMeta,
+                          color: palette.accent,
+                          textAlign: isRTL ? 'right' : 'left',
+                        }}
+                      >
+                        {highlight.reference}
+                      </Text>
+                    ) : null}
+                    {highlight.source ? (
+                      <Text
+                        style={{
+                          ...styles.highlightMeta,
+                          color: palette.textSecondary,
+                          textAlign: isRTL ? 'right' : 'left',
+                        }}
+                        numberOfLines={1}
+                      >
+                        {highlight.source}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <MaterialCommunityIcons
+                    name={isRTL ? 'chevron-left' : 'chevron-right'}
+                    size={22}
+                    color={palette.textSecondary}
+                  />
+                </Pressable>
+              ))
+            )}
+          </View>
+        </View>
+
+        <View style={{ gap: 12, paddingBottom: 12 }}>
+          <View
+            style={[
+              styles.sectionHeader,
+              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            ]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  ...styles.sectionTitle,
+                  color: palette.textPrimary,
+                  textAlign: isRTL ? 'right' : 'left',
+                }}
+              >
+                {t('home.curatedTitle')}
+              </Text>
+              <Text
+                style={{
+                  ...styles.sectionSubtitle,
+                  color: palette.textSecondary,
+                  textAlign: isRTL ? 'right' : 'left',
+                }}
+              >
+                {t('home.curatedSubtitle')}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() =>
+                navigation.navigate('MainTabs', {
+                  screen: 'kholagy',
+                  params: { category: 'kholagy' },
+                })
               }
+              style={({ pressed }) => ({
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: pressed ? palette.primary : palette.divider,
+                backgroundColor: palette.surface,
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                alignItems: 'center',
+                gap: 6,
+              })}
+            >
+              <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '600' }}>{t('home.viewAll')}</Text>
+              <MaterialCommunityIcons
+                name={isRTL ? 'chevron-left' : 'chevron-right'}
+                size={18}
+                color={palette.primary}
+              />
+            </Pressable>
+          </View>
 
-              return cards.map((card) => {
-                if (!card || !card.key) {
-                  console.warn('Invalid card found:', card);
-                  return null;
-                }
-
+          {curatedPicks.length === 0 ? (
+            <Text
+              style={{
+                color: palette.textSecondary,
+                fontSize: 14,
+                textAlign: isRTL ? 'right' : 'left',
+              }}
+            >
+              {t('home.curatedEmpty')}
+            </Text>
+          ) : (
+            <View style={styles.featureList}>
+              {curatedPicks.map((item) => {
+                const categoryLabel = t(`quickAccess.${item.category}` as const, {
+                  defaultValue: item.category,
+                });
                 return (
                   <Pressable
-                    key={card.key}
-                    onPress={() => {
-                      try {
-                        handleNavigate(card);
-                      } catch (error) {
-                        console.error('Navigation error for card:', card.key, error);
-                      }
-                    }}
+                    key={item.id}
+                    onPress={() => handleOpenReader({ id: item.id, title: item.title })}
                     style={({ pressed }) => [
-                      styles.card,
+                      styles.featureCard,
                       {
-                        borderColor: pressed ? palette.primary : palette.divider,
                         backgroundColor: palette.surface,
-                        transform: pressed ? [{ scale: 0.98 }] : undefined,
+                        borderColor: pressed ? palette.primary : palette.divider,
+                        flexDirection: isRTL ? 'row-reverse' : 'column',
                       },
                     ]}
                   >
                     <View
                       style={[
-                        styles.cardIcon,
+                        styles.featureTag,
                         {
-                          backgroundColor: palette.background,
-                          borderWidth: 1,
-                          borderColor: palette.divider,
-                          alignSelf: isRTL ? 'flex-end' : 'flex-start',
+                          borderColor: withAlpha(palette.primary, '55'),
+                          backgroundColor: withAlpha(palette.primary, '12'),
                         },
                       ]}
                     >
-                      <MaterialCommunityIcons name={card.icon as any} size={26} color={palette.primary} />
+                      <Text
+                        style={{
+                          color: palette.primary,
+                          fontSize: 12,
+                          fontWeight: '600',
+                        }}
+                      >
+                        {categoryLabel}
+                      </Text>
                     </View>
                     <Text
-                      style={[
-                        styles.cardLabel,
-                        { color: palette.textPrimary, textAlign: isRTL ? 'right' : 'left' },
-                      ]}
+                      style={{
+                        ...styles.featureTitle,
+                        color: palette.textPrimary,
+                        textAlign: isRTL ? 'right' : 'left',
+                      }}
+                      numberOfLines={2}
                     >
-                      {card.label || card.key}
+                      {item.title}
                     </Text>
-                    <MaterialCommunityIcons
-                      name={isRTL ? 'chevron-left' : 'chevron-right'}
-                      size={22}
-                      color={palette.textSecondary}
-                      style={[
-                        styles.cardChevron,
-                        isRTL ? { left: 18, right: undefined } : null,
-                      ]}
-                    />
+                    <Text
+                      style={{
+                        ...styles.featureMeta,
+                        color: palette.textSecondary,
+                        textAlign: isRTL ? 'right' : 'left',
+                      }}
+                    >
+                      {languagesLabel(item.languages)}
+                    </Text>
                   </Pressable>
                 );
-              }).filter(Boolean);
-            } catch (error) {
-              console.error('Error rendering cards:', error);
-              return (
-                <Text style={{ color: palette.textSecondary, textAlign: 'center', padding: 20 }}>
-                  Error loading navigation cards
-                </Text>
-              );
-            }
-          })()}
+              })}
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
